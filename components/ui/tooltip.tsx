@@ -1,15 +1,44 @@
 "use client"
 
+import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui-components/react/tooltip"
 
 import { cn } from "@/lib/utils"
 
 const TooltipProvider = TooltipPrimitive.Provider
 
-const Tooltip = TooltipPrimitive.Root
+type TooltipProps = TooltipPrimitive.Root.Props & {
+  delayDuration?: number
+}
 
-function TooltipTrigger(props: TooltipPrimitive.Trigger.Props) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+function Tooltip({ delayDuration, delay, ...props }: TooltipProps) {
+  const resolvedDelay = delayDuration ?? delay ?? 300
+  return <TooltipPrimitive.Root delay={resolvedDelay} {...props} />
+}
+
+type TooltipTriggerProps = TooltipPrimitive.Trigger.Props & {
+  asChild?: boolean
+}
+
+function TooltipTrigger({
+  asChild = false,
+  children,
+  render,
+  ...props
+}: TooltipTriggerProps) {
+  const resolvedRender = asChild
+    ? (render ?? (children as React.ReactElement))
+    : render
+
+  return (
+    <TooltipPrimitive.Trigger
+      data-slot="tooltip-trigger"
+      render={resolvedRender}
+      {...props}
+    >
+      {asChild ? null : children}
+    </TooltipPrimitive.Trigger>
+  )
 }
 
 function TooltipPopup({
