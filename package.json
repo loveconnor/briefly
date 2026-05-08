@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:auth": "node scripts/migrate-better-auth.mjs"
   },
   "dependencies": {
     "@base-ui-components/react": "^1.0.0-beta.4",

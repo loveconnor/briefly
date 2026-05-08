@@ -1,16 +1,8 @@
 import { betterAuth } from "better-auth"
-import { Pool } from "pg"
-
-const databaseUrl = process.env.DATABASE_URL
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is not set")
-}
+import { db } from "@/lib/db"
 
 export const auth = betterAuth({
-  database: new Pool({
-    connectionString: databaseUrl,
-  }),
+  database: db,
   emailAndPassword: {
     enabled: true,
   },
