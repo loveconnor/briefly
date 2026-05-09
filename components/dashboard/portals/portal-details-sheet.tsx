@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import {
 	ArrowUpRightIcon,
 	CheckCircle2Icon,
@@ -40,6 +41,7 @@ export function PortalDetailsSheet({
 
 function PortalDetails({ portal }: { portal: Portal }) {
 	const tone = portalToneStyles[portal.tone];
+	const portalHref = portal.clientHref ?? "/portal/acme-website-redesign";
 
 	return (
 		<div className="flex min-h-full flex-col">
@@ -87,9 +89,11 @@ function PortalDetails({ portal }: { portal: Portal }) {
 
 			<div className="mt-auto pt-8">
 				<div className="grid gap-2">
-					<Button type="button">
-						<ArrowUpRightIcon className="size-4" />
-						Open portal
+					<Button asChild>
+						<Link href={portalHref}>
+							<ArrowUpRightIcon className="size-4" />
+							Open portal
+						</Link>
 					</Button>
 					<div className="grid grid-cols-2 gap-2">
 						<Button type="button" variant="outline">

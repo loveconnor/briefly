@@ -5,6 +5,7 @@ import {
 	MoreHorizontalIcon,
 	SendIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
 	DropdownMenu,
@@ -25,6 +26,7 @@ export function PortalRow({
 	portal: Portal;
 }) {
 	const tone = portalToneStyles[portal.tone];
+	const portalHref = portal.clientHref ?? "/portal/acme-website-redesign";
 
 	return (
 		<article className="group grid gap-5 px-2 py-4 transition-colors hover:bg-muted/18 sm:px-3 lg:grid-cols-[minmax(320px,1.35fr)_minmax(260px,0.95fr)_96px] lg:items-start">
@@ -76,15 +78,18 @@ export function PortalRow({
 			</button>
 
 			<div className="flex items-center gap-2 text-xs lg:justify-end">
-				<button
+				<Link
 					className="flex items-center gap-1.5 whitespace-nowrap font-medium text-foreground transition-colors hover:text-foreground/80"
-					onClick={onSelect}
-					type="button"
+					href={portalHref}
 				>
 					Open
 					<ArrowUpRightIcon className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-				</button>
-				<PortalActionsMenu onSelect={onSelect} portalName={portal.name} />
+				</Link>
+				<PortalActionsMenu
+					onSelect={onSelect}
+					portalHref={portalHref}
+					portalName={portal.name}
+				/>
 			</div>
 		</article>
 	);
@@ -92,9 +97,11 @@ export function PortalRow({
 
 function PortalActionsMenu({
 	onSelect,
+	portalHref,
 	portalName,
 }: {
 	onSelect: () => void;
+	portalHref: string;
 	portalName: string;
 }) {
 	return (
@@ -106,7 +113,7 @@ function PortalActionsMenu({
 				<MoreHorizontalIcon className="size-4" />
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-40">
-				<DropdownMenuItem onClick={onSelect}>
+				<DropdownMenuItem render={<Link href={portalHref} />}>
 					<ArrowUpRightIcon className="size-4" />
 					Open portal
 				</DropdownMenuItem>

@@ -16,6 +16,7 @@ export type Portal = {
 	latestAction: string;
 	approvalState: string;
 	tone: PortalTone;
+	clientHref?: string;
 	preview: {
 		type: "homepage" | "brand" | "launch" | "content";
 		label: string;
@@ -43,6 +44,7 @@ export const portals: Portal[] = [
 		latestAction: "Comment left on mobile navigation",
 		approvalState: "Awaiting approval",
 		tone: "attention",
+		clientHref: "/portal/acme-website-redesign",
 		preview: {
 			type: "homepage",
 			label: "Homepage",
