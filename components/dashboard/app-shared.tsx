@@ -59,7 +59,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Clients",
-				path: "#/clients",
+				path: "/dashboard/clients",
 				icon: <UsersIcon />,
 			},
 			{

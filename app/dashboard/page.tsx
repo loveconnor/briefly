@@ -7,14 +7,7 @@ import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { AppShell } from "@/components/dashboard/app-shell";
 
 import CalendarDateRangePicker from "@/components/ui/custom-date-range-picker";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { buttonVariants } from "@/components/ui/button";
-import { FolderUp } from "lucide-react";
 
 import { SummaryCards } from "@/components/dashboard/overview/summary-cards";
 import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
@@ -59,15 +52,6 @@ export default async function Page() {
         <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
         <div className="flex items-center space-x-2">
           <CalendarDateRangePicker />
-          <DropdownMenu>
-            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "outline" }))}>
-              <FolderUp /> <span className="hidden lg:inline">Export</span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Excel</DropdownMenuItem>
-              <DropdownMenuItem>PDF</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 

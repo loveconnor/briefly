@@ -41,7 +41,7 @@ export function AppSidebar() {
 				<SidebarGroup>
 					<SidebarMenuItem className="flex items-center gap-2">
 						<SidebarMenuButton
-							className="min-w-8 justify-center bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
+							className="min-w-8 justify-center gap-2 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:[&>span]:hidden"
 							tooltip="Quick Create"
 						>
 							<PlusIcon
