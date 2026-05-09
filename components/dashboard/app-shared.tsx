@@ -1,13 +1,11 @@
 import type { ReactNode } from "react";
 import {
-	ActivityIcon,
 	BarChart3Icon,
 	BriefcaseBusinessIcon,
 	Building2Icon,
 	CreditCardIcon,
 	FileTextIcon,
 	FilesIcon,
-	HelpCircleIcon,
 	InboxIcon,
 	LayoutGridIcon,
 	PanelsTopLeftIcon,
@@ -36,20 +34,17 @@ export const navGroups: SidebarNavGroup[] = [
 		items: [
 			{
 				title: "Overview",
-				path: "#/overview",
+				path: "/dashboard",
 				icon: <LayoutGridIcon />,
-				isActive: true,
 			},
 			{
 				title: "Inbox",
 				icon: <InboxIcon />,
 				subItems: [
-					{ title: "All Activity", path: "#/inbox/all-activity" },
-					{ title: "Approvals", path: "#/inbox/approvals" },
-					{ title: "Mentions", path: "#/inbox/mentions" },
-					{ title: "Client Requests", path: "#/inbox/client-requests" },
-					{ title: "Unread", path: "#/inbox/unread" },
-					{ title: "Archived", path: "#/inbox/archived" },
+					{ title: "All Activity", path: "/dashboard/inbox/all-activity" },
+					{ title: "Approvals", path: "/dashboard/inbox/approvals" },
+					{ title: "Requests", path: "/dashboard/inbox/requests" },
+					{ title: "Archived", path: "/dashboard/inbox/archived" },
 				],
 			},
 			{

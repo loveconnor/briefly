@@ -13,9 +13,12 @@ import {
 import type { SidebarNavGroup } from "@/components/dashboard/app-shared";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export function NavGroup({ label, items }: SidebarNavGroup) {
+	const pathname = usePathname();
 	const [openItems, setOpenItems] = useState<Record<string, boolean>>(() =>
 		Object.fromEntries(
 			items
@@ -29,7 +32,11 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 			{label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
 			<SidebarMenu>
 				{items.map((item) => {
-					const isOpen = Boolean(openItems[item.title]);
+					const hasActiveSubItem = item.subItems?.some(
+						(subItem) => subItem.path === pathname
+					);
+					const isOpen = Boolean(openItems[item.title] || hasActiveSubItem);
+					const isActive = item.path === pathname || hasActiveSubItem;
 
 					return (
 						<SidebarMenuItem key={item.title}>
@@ -37,7 +44,7 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 								<>
 									<SidebarMenuButton
 										aria-expanded={isOpen}
-										isActive={item.isActive}
+										isActive={isActive}
 										onClick={() =>
 											setOpenItems((current) => ({
 												...current,
@@ -58,11 +65,14 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 										<SidebarMenuSub>
 											{item.subItems.map((subItem) => (
 												<SidebarMenuSubItem key={subItem.title}>
-													<SidebarMenuSubButton asChild isActive={subItem.isActive}>
-														<a href={subItem.path}>
+													<SidebarMenuSubButton
+														asChild
+														isActive={subItem.path === pathname}
+													>
+														<Link href={subItem.path ?? "#"}>
 															{subItem.icon}
 															<span>{subItem.title}</span>
-														</a>
+														</Link>
 													</SidebarMenuSubButton>
 												</SidebarMenuSubItem>
 											))}
@@ -70,11 +80,11 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 									) : null}
 								</>
 							) : (
-								<SidebarMenuButton asChild isActive={item.isActive}>
-									<a href={item.path}>
+								<SidebarMenuButton asChild isActive={isActive}>
+									<Link href={item.path ?? "#"}>
 										{item.icon}
 										<span>{item.title}</span>
-									</a>
+									</Link>
 								</SidebarMenuButton>
 							)}
 						</SidebarMenuItem>

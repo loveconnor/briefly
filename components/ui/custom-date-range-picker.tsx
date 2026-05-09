@@ -55,6 +55,7 @@ export default function CalendarDateRangePicker({
   });
   const [open, setOpen] = React.useState(false);
   const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
+  const [preset, setPreset] = React.useState<string>("last28Days");
 
   const handleQuickSelect = (from: Date, to: Date) => {
     setDate({ from, to });
@@ -96,6 +97,17 @@ export default function CalendarDateRangePicker({
         handleQuickSelect(startOfDay(startOfCurrentYear), endOfDay(today));
         break;
     }
+  };
+
+  const handlePresetChange = (values: readonly string[]) => {
+    const nextPreset = values[values.length - 1];
+
+    if (!nextPreset) {
+      return;
+    }
+
+    setPreset(nextPreset);
+    changeHandle(nextPreset);
   };
 
   return (
@@ -160,21 +172,25 @@ export default function CalendarDateRangePicker({
           <div className="flex flex-col lg:flex-row">
             <div className="me-0 lg:me-4">
               <ToggleGroup
-                type="single"
-                defaultValue="last28Days"
+                value={[preset]}
+                onValueChange={handlePresetChange}
                 className="hidden w-28 flex-col lg:block">
                 {dateFilterPresets.map((item, key) => (
                   <ToggleGroupItem
                     key={key}
-                    className="text-muted-foreground w-full"
+                    className="w-full justify-start rounded-md text-muted-foreground"
                     value={item.value}
-                    onClick={() => changeHandle(item.value)}
-                    asChild>
-                    <Button className="justify-start rounded-md">{item.name}</Button>
+                    aria-label={item.name}>
+                    {item.name}
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
-              <Select defaultValue="last28Days" onValueChange={(value) => changeHandle(value)}>
+              <Select
+                value={preset}
+                onValueChange={(value) => {
+                  setPreset(value);
+                  changeHandle(value);
+                }}>
                 <SelectTrigger
                   className="mb-4 flex w-full lg:hidden"
                   size="sm"

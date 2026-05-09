@@ -10,10 +10,12 @@ import { NavUser } from "@/components/dashboard/nav-user";
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import type { AppShellUser } from "@/components/dashboard/app-shell";
 import { BellIcon } from "lucide-react";
-
-const activeItem = navLinks.find((item) => item.isActive);
+import { usePathname } from "next/navigation";
 
 export function AppHeader({ user }: { user: AppShellUser }) {
+	const pathname = usePathname();
+	const activeItem = navLinks.find((item) => item.path === pathname);
+
 	return (
 		<header
 			className={cn(

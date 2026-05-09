@@ -16,7 +16,8 @@ function Collapsible({
   ...props
 }: CollapsibleProps) {
   const resolvedRender = asChild
-    ? (render ?? (children as React.ReactElement))
+    ? (render ??
+      (children as React.ReactElement<Record<string, unknown>>))
     : render
 
   return (
@@ -42,7 +43,8 @@ function CollapsibleTrigger({
   ...props
 }: CollapsibleTriggerProps) {
   const resolvedRender = asChild
-    ? (render ?? (children as React.ReactElement))
+    ? (render ??
+      (children as React.ReactElement<Record<string, unknown>>))
     : render
 
   return (
