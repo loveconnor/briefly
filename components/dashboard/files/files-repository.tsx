@@ -414,7 +414,7 @@ function FileRow({
 	return (
 		<div
 			className={cn(
-				"group grid w-full gap-3 rounded-md px-2 py-4 text-left transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(260px,1fr)_minmax(320px,0.9fr)_44px] lg:items-center lg:gap-5",
+				"group grid w-full gap-3 rounded-md px-2 py-4 text-left transition-colors hover:bg-muted/35 lg:grid-cols-[minmax(260px,1fr)_minmax(560px,auto)_44px] lg:items-center lg:gap-5",
 				isSelected && "bg-muted/45"
 			)}
 		>
@@ -434,20 +434,24 @@ function FileRow({
 					</span>
 				</span>
 			</button>
-			<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground lg:justify-end">
-				<span>{file.type}</span>
-				<span aria-hidden="true">·</span>
-				<span className={cn("font-medium", statusClassMap[file.status])}>{file.status}</span>
-				<span aria-hidden="true">·</span>
-				<span>{file.shared}</span>
-				<span aria-hidden="true">·</span>
-				<span>{file.updated}</span>
-				<span aria-hidden="true">·</span>
-				<span>{file.owner}</span>
-			</div>
-			<div className="flex justify-start lg:justify-end">
+			<FileMetadata file={file} />
+			<div className="flex items-center justify-start lg:justify-end">
 				<FileActions fileName={file.name} isPinned={isPinned} onTogglePinned={onTogglePinned} />
 			</div>
+		</div>
+	);
+}
+
+function FileMetadata({ file }: { file: RepositoryFile }) {
+	return (
+		<div className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground sm:grid-cols-[90px_minmax(130px,1fr)_90px_80px_90px] lg:w-[560px] lg:grid-cols-[90px_160px_90px_80px_90px]">
+			<span className="truncate">{file.type}</span>
+			<span className={cn("truncate font-medium", statusClassMap[file.status])}>
+				{file.status}
+			</span>
+			<span className="truncate">{file.shared}</span>
+			<span className="truncate tabular-nums">{file.updated}</span>
+			<span className="truncate">{file.owner}</span>
 		</div>
 	);
 }

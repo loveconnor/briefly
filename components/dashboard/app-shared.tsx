@@ -51,10 +51,10 @@ export const navGroups: SidebarNavGroup[] = [
 				title: "Projects",
 				icon: <SquareKanbanIcon />,
 				subItems: [
-					{ title: "Acme Website", path: "#/projects/acme-website" },
-					{ title: "Nova Redesign", path: "#/projects/nova-redesign" },
-					{ title: "Gym Launch", path: "#/projects/gym-launch" },
-					{ title: "View All", path: "#/projects" },
+					{ title: "Acme Website", path: "/dashboard/projects/acme-website" },
+					{ title: "Nova Redesign", path: "/dashboard/projects/nova-redesign" },
+					{ title: "Gym Launch", path: "/dashboard/projects/gym-launch" },
+					{ title: "View All", path: "/dashboard/projects" },
 				],
 			},
 			{
