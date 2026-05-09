@@ -79,7 +79,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Analytics",
-				path: "#/analytics",
+				path: "/dashboard/analytics",
 				icon: <BarChart3Icon />,
 			},
 		],
