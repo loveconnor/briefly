@@ -44,7 +44,6 @@ export const portals: Portal[] = [
 		latestAction: "Comment left on mobile navigation",
 		approvalState: "Awaiting approval",
 		tone: "attention",
-		clientHref: "/portal/acme-website-redesign",
 		preview: {
 			type: "homepage",
 			label: "Homepage",

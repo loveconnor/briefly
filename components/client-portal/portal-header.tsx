@@ -4,7 +4,7 @@ import { MessageCircleIcon, PlusIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StateItem } from "./state-item";
 
-export function PortalHeader() {
+export function PortalHeader({ projectName }: { projectName: string }) {
 	return (
 		<>
 			<header className="border-b bg-background/95 backdrop-blur">
@@ -33,7 +33,7 @@ export function PortalHeader() {
 				<div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
 					<div className="min-w-0">
 						<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-							Acme Website Redesign
+							{projectName}
 						</h1>
 						<p className="mt-3 text-base text-muted-foreground">
 							Design Phase / Updated 2h ago

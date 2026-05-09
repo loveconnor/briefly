@@ -6,10 +6,10 @@ import { HomepagePreview } from "./homepage-preview";
 import { ActivityList, FileList, MessageList, TaskList } from "./portal-lists";
 import { SummarySection } from "./summary-section";
 
-export function OverviewTab() {
+export function OverviewTab({ projectName }: { projectName: string }) {
 	return (
 		<div className="space-y-10">
-			<ReviewTab compact />
+			<ReviewTab compact projectName={projectName} />
 			<div className="grid gap-10 xl:grid-cols-2">
 				<SummarySection title="Open Tasks" eyebrow="Client tasks">
 					<TaskList limit={2} />
@@ -25,7 +25,13 @@ export function OverviewTab() {
 	);
 }
 
-export function ReviewTab({ compact = false }: { compact?: boolean }) {
+export function ReviewTab({
+	compact = false,
+	projectName,
+}: {
+	compact?: boolean;
+	projectName: string;
+}) {
 	return (
 		<section className="bg-muted/35 px-5 py-7 sm:px-7 sm:py-8">
 			<div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -47,7 +53,7 @@ export function ReviewTab({ compact = false }: { compact?: boolean }) {
 			</div>
 
 			<div className="mt-6">
-				<HomepagePreview compact={compact} />
+				<HomepagePreview compact={compact} projectName={projectName} />
 			</div>
 
 			<div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_220px]">

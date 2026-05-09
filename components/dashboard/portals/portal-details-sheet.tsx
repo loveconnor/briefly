@@ -41,7 +41,7 @@ export function PortalDetailsSheet({
 
 function PortalDetails({ portal }: { portal: Portal }) {
 	const tone = portalToneStyles[portal.tone];
-	const portalHref = portal.clientHref ?? "/portal/acme-website-redesign";
+	const portalHref = portal.clientHref ?? `/portal/${portal.id}`;
 
 	return (
 		<div className="flex min-h-full flex-col">

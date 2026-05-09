@@ -26,7 +26,7 @@ export function PortalRow({
 	portal: Portal;
 }) {
 	const tone = portalToneStyles[portal.tone];
-	const portalHref = portal.clientHref ?? "/portal/acme-website-redesign";
+	const portalHref = portal.clientHref ?? `/portal/${portal.id}`;
 
 	return (
 		<article className="group grid gap-5 px-2 py-4 transition-colors hover:bg-muted/18 sm:px-3 lg:grid-cols-[minmax(320px,1.35fr)_minmax(260px,0.95fr)_96px] lg:items-start">

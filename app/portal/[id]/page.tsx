@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PortalHeader } from "./portal-header";
+import type { Metadata } from "next";
+
+import { PortalHeader } from "@/components/client-portal/portal-header";
 import {
 	ActivityTab,
 	FilesTab,
@@ -8,13 +8,44 @@ import {
 	OverviewTab,
 	ReviewTab,
 	TasksTab,
-} from "./portal-tab-panels";
-import { SidePanel } from "./side-panel";
+} from "@/components/client-portal/portal-tab-panels";
+import { SidePanel } from "@/components/client-portal/side-panel";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export function ClientPortalPage() {
+function formatPortalTitle(id: string) {
+	return id
+		.split("-")
+		.filter(Boolean)
+		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+		.join(" ");
+}
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+	const { id } = await params;
+	const title = formatPortalTitle(id);
+
+	return {
+		title: `${title} Portal`,
+		description: `Client portal for ${title}.`,
+	};
+}
+
+export default async function Page({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}) {
+	const { id } = await params;
+	const projectName = formatPortalTitle(id) || "Client Portal";
+
 	return (
 		<div className="min-h-svh bg-background text-foreground">
-			<PortalHeader />
+			<PortalHeader projectName={projectName} />
 
 			<main className="mx-auto w-full max-w-[1240px] px-5 pb-28 sm:px-8 sm:pb-16">
 				<Tabs className="gap-7" defaultValue="overview" id="portal-tabs">
@@ -35,10 +66,10 @@ export function ClientPortalPage() {
 					<div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
 						<div className="min-w-0">
 							<TabsContent value="overview">
-								<OverviewTab />
+								<OverviewTab projectName={projectName} />
 							</TabsContent>
 							<TabsContent value="review">
-								<ReviewTab />
+								<ReviewTab projectName={projectName} />
 							</TabsContent>
 							<TabsContent value="tasks">
 								<TasksTab />

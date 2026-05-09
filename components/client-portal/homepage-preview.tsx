@@ -1,9 +1,17 @@
-export function HomepagePreview({ compact = false }: { compact?: boolean }) {
+export function HomepagePreview({
+	compact = false,
+	projectName,
+}: {
+	compact?: boolean;
+	projectName: string;
+}) {
+	const brandName = projectName.split(" ")[0] || "Client";
+
 	return (
 		<div className="overflow-hidden bg-background/85">
 			<div className="border-b px-5 py-4">
 				<div className="flex items-center justify-between gap-4">
-					<p className="text-sm font-medium">Acme</p>
+					<p className="text-sm font-medium">{brandName}</p>
 					<div className="hidden items-center gap-5 text-sm text-muted-foreground sm:flex">
 						<span>Services</span>
 						<span>Work</span>
