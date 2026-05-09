@@ -74,7 +74,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Files",
-				path: "#/files",
+				path: "/dashboard/files",
 				icon: <FilesIcon />,
 			},
 			{
