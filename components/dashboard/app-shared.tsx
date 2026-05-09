@@ -64,7 +64,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Portals",
-				path: "#/portals",
+				path: "/dashboard/portals",
 				icon: <PanelsTopLeftIcon />,
 			},
 			{
