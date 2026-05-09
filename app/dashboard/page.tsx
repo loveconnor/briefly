@@ -1,0 +1,90 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { cn, generateMeta } from "@/lib/utils";
+import { auth } from "@/lib/auth";
+import { getOnboardingStatus } from "@/lib/onboarding";
+import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
+import { AppShell } from "@/components/dashboard/app-shell";
+
+import CalendarDateRangePicker from "@/components/ui/custom-date-range-picker";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { buttonVariants } from "@/components/ui/button";
+import { FolderUp } from "lucide-react";
+
+import { SummaryCards } from "@/components/dashboard/overview/summary-cards";
+import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
+import { NeedsAttention } from "@/components/dashboard/overview/needs-attention";
+import { TableRecentProjects } from "@/components/dashboard/overview/table-recent-projects";
+import { UpcomingDeliverables } from "@/components/dashboard/overview/upcoming-deliverables";
+import { RecentUpdates } from "@/components/dashboard/overview/recent-updates";
+
+export async function generateMetadata() {
+  return generateMeta({
+    title: "Client Operations Dashboard",
+    description:
+      "Track approvals, client responses, project progress, and upcoming deliverables from one operations workspace.",
+    canonical: "/dashboard"
+  });
+}
+
+export default async function Page() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const onboarding = await getOnboardingStatus(session.user.id);
+
+  if (!onboarding.completed) {
+    return <OnboardingFlow />;
+  }
+
+  return (
+    <AppShell
+      user={{
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+      }}
+    >
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+        <div className="flex items-center space-x-2">
+          <CalendarDateRangePicker />
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "outline" }))}>
+              <FolderUp /> <span className="hidden lg:inline">Export</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Excel</DropdownMenuItem>
+              <DropdownMenuItem>PDF</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <SummaryCards />
+        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <RecentActivity />
+          </div>
+          <NeedsAttention />
+        </div>
+        <TableRecentProjects />
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <UpcomingDeliverables />
+          <RecentUpdates />
+        </div>
+      </div>
+    </AppShell>
+  );
+}
