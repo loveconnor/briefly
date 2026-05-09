@@ -69,7 +69,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Updates",
-				path: "#/updates",
+				path: "/dashboard/updates",
 				icon: <FileTextIcon />,
 			},
 			{
