@@ -126,7 +126,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Settings",
-				path: "#/settings",
+				path: "/dashboard/settings",
 				icon: <Settings2Icon />,
 			},
 			{
