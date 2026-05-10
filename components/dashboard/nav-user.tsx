@@ -17,7 +17,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import type { AppShellUser } from "@/components/dashboard/app-shell";
-import { UserIcon, BellIcon, CommandIcon, LifeBuoyIcon, GraduationCapIcon, CreditCardIcon, LogOutIcon } from "lucide-react";
+import {
+	ArrowRightIcon,
+	BellIcon,
+	CommandIcon,
+	CreditCardIcon,
+	GraduationCapIcon,
+	LifeBuoyIcon,
+	LogOutIcon,
+	RefreshCwIcon,
+} from "lucide-react";
 
 function getDisplayName(user: AppShellUser) {
 	return user.name?.trim() || user.email;
@@ -60,74 +69,74 @@ export function NavUser({ user }: { user: AppShellUser }) {
 					<AvatarFallback>{fallback}</AvatarFallback>
 				</Avatar>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-60">
-				<div className="px-1.5 py-1.5">
-					<div className="flex items-center gap-3">
-						<Avatar className="size-10">
-							{user.image ? <AvatarImage src={user.image} alt={displayName} /> : null}
-							<AvatarFallback>{fallback}</AvatarFallback>
-						</Avatar>
-						<div>
-							<span className="font-medium text-foreground">{displayName}</span>{" "}
-							<br />
-							<div className="max-w-full overflow-hidden overflow-ellipsis whitespace-nowrap text-muted-foreground text-xs">
-								{user.email}
-							</div>
+			<DropdownMenuContent align="end" className="w-60 overflow-hidden p-0">
+				<div className="flex items-start gap-3 px-4 py-3.5">
+					<Avatar className="mt-0.5 size-8">
+						{user.image ? <AvatarImage src={user.image} alt={displayName} /> : null}
+						<AvatarFallback>{fallback}</AvatarFallback>
+					</Avatar>
+					<div className="min-w-0">
+						<div className="truncate text-sm font-semibold text-foreground">
+							{displayName}
 						</div>
+						<div className="mt-0.5 truncate text-xs text-muted-foreground">
+							Owner · Briefly Studio
+						</div>
+						<button
+							className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-foreground hover:text-muted-foreground"
+							onClick={() => router.push("/dashboard/settings")}
+							type="button"
+						>
+							Manage account
+							<ArrowRightIcon className="size-3" />
+						</button>
 					</div>
 				</div>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<UserIcon
-						/>
-						Profile
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<BellIcon
-						/>
+					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+						<BellIcon className="size-4" />
 						Notifications
 					</DropdownMenuItem>
-					<DropdownMenuItem>
-						<CommandIcon
-						/>
+					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+						<CommandIcon className="size-4" />
 						Keyboard shortcuts
 					</DropdownMenuItem>
+					<DropdownMenuItem
+						className="gap-2.5 px-4 py-2 text-sm"
+						onClick={() => router.push("/dashboard/billing")}
+					>
+						<CreditCardIcon className="size-4" />
+						Billing &amp; plan
+					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<LifeBuoyIcon
-						/>
+					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+						<LifeBuoyIcon className="size-4" />
 						Help center
 					</DropdownMenuItem>
-					<DropdownMenuItem>
-						<GraduationCapIcon
-						/>
-						Agent training
+					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+						<GraduationCapIcon className="size-4" />
+						Training &amp; onboarding
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem>
-						<CreditCardIcon
-						/>
-						Subscription
+					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+						<RefreshCwIcon className="size-4" />
+						Switch workspace
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
 					<DropdownMenuItem
-						className="w-full cursor-pointer"
+						className="w-full cursor-pointer gap-2.5 px-4 py-2 text-sm"
 						disabled={isSigningOut}
 						onClick={handleLogout}
 						variant="destructive"
 					>
-						<LogOutIcon
-						/>
+						<LogOutIcon className="size-4" />
 						{isSigningOut ? "Logging out..." : "Log out"}
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
