@@ -131,7 +131,7 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Billing",
-				path: "#/billing",
+				path: "/dashboard/billing",
 				icon: <CreditCardIcon />,
 			},
 		],
