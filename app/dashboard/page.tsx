@@ -1,13 +1,12 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { cn, generateMeta } from "@/lib/utils";
+import { generateMeta } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { AppShell } from "@/components/dashboard/app-shell";
 
 import CalendarDateRangePicker from "@/components/ui/custom-date-range-picker";
-import { buttonVariants } from "@/components/ui/button";
 
 import { SummaryCards } from "@/components/dashboard/overview/summary-cards";
 import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
@@ -48,23 +47,23 @@ export default async function Page() {
         image: session.user.image,
       }}
     >
-      <div className="mb-4 flex items-center justify-between gap-4">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
         <div className="flex items-center space-x-2">
           <CalendarDateRangePicker />
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-8">
         <SummaryCards />
-        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <RecentActivity />
           </div>
           <NeedsAttention />
         </div>
         <TableRecentProjects />
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-8 xl:grid-cols-2">
           <UpcomingDeliverables />
           <RecentUpdates />
         </div>

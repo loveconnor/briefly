@@ -16,7 +16,6 @@ import {
 } from "@tanstack/react-table";
 
 import { buttonVariants, Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -36,8 +35,6 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -191,6 +188,22 @@ type Project = {
   progress?: number;
 };
 
+const statusCopy: Record<Project["status"], string> = {
+  active: "Active",
+  blocked: "Blocked",
+  complete: "Complete",
+  review: "In review",
+  waiting: "Waiting"
+};
+
+const statusDotClassMap: Record<Project["status"], string> = {
+  active: "bg-success",
+  blocked: "bg-destructive",
+  complete: "bg-info",
+  review: "bg-warning",
+  waiting: "bg-muted-foreground"
+};
+
 export const columns: ColumnDef<Project>[] = [
   {
     id: "select",
@@ -230,8 +243,8 @@ export const columns: ColumnDef<Project>[] = [
         .toUpperCase();
 
       return (
-        <div className="flex items-center gap-4">
-          <Avatar>
+        <div className="flex items-center gap-3">
+          <Avatar className="size-7">
             <AvatarImage src={client.avatar} alt="" />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
@@ -247,37 +260,36 @@ export const columns: ColumnDef<Project>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Signal",
     cell: ({ row }) => {
       const status = row.getValue("status") as Project["status"];
+      const waitingOn = row.original.waitingOn;
 
-      const statusClassMap: Record<typeof status, string> = {
-        active: "bg-success/8 text-success-foreground dark:bg-success/16",
-        blocked: "bg-destructive/8 text-destructive-foreground dark:bg-destructive/16",
-        complete: "bg-info/8 text-info-foreground dark:bg-info/16",
-        review: "bg-warning/8 text-warning-foreground dark:bg-warning/16",
-        waiting: "bg-muted text-muted-foreground"
-      };
-
-      return <Badge className={`capitalize ${statusClassMap[status]}`}>{status}</Badge>;
-    }
-  },
-  {
-    accessorKey: "waitingOn",
-    header: "Waiting On",
-    cell: ({ row }) => {
-      const waitingOn = row.getValue("waitingOn") as string;
-
-      return <Badge variant={waitingOn === "None" ? "outline" : "secondary"}>{waitingOn}</Badge>;
+      return (
+        <div className="flex items-center gap-2">
+          <span className={cn("size-2 rounded-full", statusDotClassMap[status])} />
+          <span className="text-sm">
+            {statusCopy[status]}
+            {waitingOn && waitingOn !== "None" ? (
+              <span className="text-muted-foreground"> · {waitingOn}</span>
+            ) : null}
+          </span>
+        </div>
+      );
     }
   },
   {
     accessorKey: "progress",
     header: "Progress",
     cell: ({ row }) => (
-      <div className="flex flex-col lg:flex-row lg:items-center lg:gap-2">
-        <Progress value={row.getValue("progress")} className="h-2" />
-        <span className="text-muted-foreground text-sm">%{row.getValue("progress")}</span>
+      <div className="flex min-w-24 items-center gap-3">
+        <span className="text-sm tabular-nums">{row.getValue("progress")}%</span>
+        <span className="bg-muted hidden h-px w-12 overflow-hidden rounded-full sm:block">
+          <span
+            className="bg-muted-foreground/50 block h-px"
+            style={{ width: `${row.getValue("progress")}%` }}
+          />
+        </span>
       </div>
     )
   },
@@ -339,22 +351,21 @@ export function TableRecentProjects() {
   });
 
   return (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle>Recent Projects</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4 flex items-center gap-4">
+    <section className="mt-8">
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-display text-lg font-medium tracking-tight">Recent Projects</h2>
+          <p className="text-muted-foreground mt-1 text-sm">Active delivery work and the next point of movement.</p>
+        </div>
+        <div className="flex items-center gap-3">
           <Input
             placeholder="Filter projects..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
-            className="max-w-sm"
+            className="w-full sm:w-64"
           />
           <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(buttonVariants({ variant: "outline" }), "ml-auto")}
-            >
+            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "outline" }))}>
               Columns <ChevronDownIcon className="ml-2 h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -375,67 +386,67 @@ export function TableRecentProjects() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id} className="[&:has([role=checkbox])]:pl-3">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(header.column.columnDef.header, header.getContext())}
-                      </TableHead>
-                    );
-                  })}
+      </div>
+      <div className="border-y">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} className="[&:has([role=checkbox])]:pl-3">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="[&:has([role=checkbox])]:pl-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
                 </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="[&:has([role=checkbox])]:pl-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2 pt-4">
+        <div className="text-muted-foreground flex-1 text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
-        <div className="flex items-center justify-end space-x-2 pt-4">
-          <div className="text-muted-foreground flex-1 text-sm">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}>
-              <ChevronLeft />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}>
-              <ChevronRight />
-            </Button>
-          </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}>
+            <ChevronLeft />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}>
+            <ChevronRight />
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

@@ -1,7 +1,5 @@
 import { CheckCircle2, Link2, Send, Share2 } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
 const updates = [
   {
     icon: Send,
@@ -27,30 +25,28 @@ const updates = [
 
 export function RecentUpdates() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Updates</CardTitle>
-        <CardDescription>Communication sent and project visibility maintained.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="divide-y">
-          {updates.map((update) => {
-            const Icon = update.icon;
+    <section>
+      <div className="mb-4">
+        <h2 className="font-display text-lg font-medium tracking-tight">Recent Updates</h2>
+        <p className="text-muted-foreground mt-1 text-sm">Communication sent and project visibility maintained.</p>
+      </div>
+      <div className="space-y-5">
+        {updates.map((update) => {
+          const Icon = update.icon;
 
-            return (
-              <div key={update.title} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-                <div className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-md">
-                  <Icon className="text-muted-foreground size-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium leading-5">{update.title}</p>
-                  <p className="text-muted-foreground mt-1 text-sm">{update.detail}</p>
-                </div>
+          return (
+            <div key={update.title} className="flex gap-4">
+              <div className="text-muted-foreground mt-0.5 flex size-7 shrink-0 items-center justify-center">
+                <Icon className="size-4" />
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              <div className="min-w-0">
+                <p className="font-medium leading-5">{update.title}</p>
+                <p className="text-muted-foreground mt-1 text-sm">{update.detail}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
