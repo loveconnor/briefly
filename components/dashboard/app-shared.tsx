@@ -100,13 +100,8 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Automations",
+				path: "/dashboard/automations",
 				icon: <WorkflowIcon />,
-				subItems: [
-					{ title: "Approval Reminders", path: "#/automations/approval-reminders" },
-					{ title: "Weekly Updates", path: "#/automations/weekly-updates" },
-					{ title: "Status Changes", path: "#/automations/status-changes" },
-					{ title: "Client Follow-ups", path: "#/automations/client-follow-ups" },
-				],
 			},
 			{
 				title: "Team",
