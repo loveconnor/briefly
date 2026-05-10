@@ -14,11 +14,15 @@ import type { SidebarNavGroup } from "@/components/dashboard/app-shared";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 export function NavGroup({ label, items }: SidebarNavGroup) {
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const currentPath = searchParams.size
+		? `${pathname}?${searchParams.toString()}`
+		: pathname;
 	const [openItems, setOpenItems] = useState<Record<string, boolean>>(() =>
 		Object.fromEntries(
 			items
@@ -33,10 +37,11 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 			<SidebarMenu>
 				{items.map((item) => {
 					const hasActiveSubItem = item.subItems?.some(
-						(subItem) => subItem.path === pathname
+						(subItem) => subItem.path === currentPath || subItem.path === pathname
 					);
 					const isOpen = Boolean(openItems[item.title] || hasActiveSubItem);
-					const isActive = item.path === pathname || hasActiveSubItem;
+					const isActive =
+						item.path === currentPath || item.path === pathname || hasActiveSubItem;
 
 					return (
 						<SidebarMenuItem key={item.title}>
@@ -67,7 +72,9 @@ export function NavGroup({ label, items }: SidebarNavGroup) {
 												<SidebarMenuSubItem key={subItem.title}>
 													<SidebarMenuSubButton
 														asChild
-														isActive={subItem.path === pathname}
+														isActive={
+															subItem.path === currentPath || subItem.path === pathname
+														}
 													>
 														<Link href={subItem.path ?? "#"}>
 															{subItem.icon}

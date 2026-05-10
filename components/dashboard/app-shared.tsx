@@ -91,11 +91,11 @@ export const navGroups: SidebarNavGroup[] = [
 				title: "Templates",
 				icon: <BriefcaseBusinessIcon />,
 				subItems: [
-					{ title: "Website Projects", path: "#/templates/website-projects" },
-					{ title: "SEO Campaigns", path: "#/templates/seo-campaigns" },
-					{ title: "Branding", path: "#/templates/branding" },
-					{ title: "Retainers", path: "#/templates/retainers" },
-					{ title: "Create Template", path: "#/templates/create" },
+					{ title: "Website delivery", path: "/dashboard/templates/website-redesign-system" },
+					{ title: "SEO campaigns", path: "/dashboard/templates/seo-campaign-operating-system" },
+					{ title: "Branding systems", path: "/dashboard/templates/brand-identity-blueprint" },
+					{ title: "Monthly retainers", path: "/dashboard/templates/monthly-retainer-rhythm" },
+					{ title: "Custom workflows", path: "/dashboard/templates/custom-client-workflow" },
 				],
 			},
 			{
