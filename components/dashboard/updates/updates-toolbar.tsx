@@ -5,6 +5,11 @@ import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FilterSelect } from "@/components/dashboard/updates/filter-select";
 import { formatUpdateType } from "@/components/dashboard/updates/format-update-type";
+import type { UpdateType } from "@/components/dashboard/updates/types";
+
+function formatTypeOption(option: string) {
+	return option === "All types" ? option : formatUpdateType(option as UpdateType);
+}
 
 export function UpdatesToolbar({
 	onProjectChange,
@@ -35,7 +40,7 @@ export function UpdatesToolbar({
 	state: string;
 	states: string[];
 	type: string;
-	types: string[];
+	types: Array<"All types" | UpdateType>;
 }) {
 	return (
 		<div className="flex flex-col gap-3 xl:flex-row xl:items-center">
@@ -53,7 +58,7 @@ export function UpdatesToolbar({
 			<div className="grid grid-cols-2 gap-2 md:flex">
 				<FilterSelect label="Project" onChange={onProjectChange} options={projects} value={project} />
 				<FilterSelect
-					formatOption={(option) => option === "All types" ? option : formatUpdateType(option)}
+					formatOption={formatTypeOption}
 					label="Type"
 					onChange={onTypeChange}
 					options={types}

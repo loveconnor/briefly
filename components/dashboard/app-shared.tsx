@@ -110,13 +110,8 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Team",
+				path: "/dashboard/team",
 				icon: <UserCogIcon />,
-				subItems: [
-					{ title: "Members", path: "#/team/members" },
-					{ title: "Roles", path: "#/team/roles" },
-					{ title: "Invitations", path: "#/team/invitations" },
-					{ title: "Permissions", path: "#/team/permissions" },
-				],
 			},
 		],
 	},

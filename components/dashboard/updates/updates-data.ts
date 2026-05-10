@@ -1,4 +1,4 @@
-import type { ClientUpdate, DateGroup } from "@/components/dashboard/updates/types";
+import type { ClientUpdate, DateGroup, UpdateType } from "@/components/dashboard/updates/types";
 
 export const updates: ClientUpdate[] = [
 	{
@@ -125,7 +125,7 @@ export const updateProjects = [
 	...Array.from(new Set(updates.map((update) => update.project))),
 ];
 
-export const updateTypes = [
+export const updateTypes: Array<"All types" | UpdateType> = [
 	"All types",
 	...Array.from(new Set(updates.map((update) => update.type))),
 ];
