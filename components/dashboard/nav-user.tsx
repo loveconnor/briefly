@@ -69,7 +69,7 @@ export function NavUser({ user }: { user: AppShellUser }) {
 					<AvatarFallback>{fallback}</AvatarFallback>
 				</Avatar>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-60 overflow-hidden p-0">
+			<DropdownMenuContent align="end" className="w-60 overflow-hidden p-1">
 				<div className="flex items-start gap-3 px-4 py-3.5">
 					<Avatar className="mt-0.5 size-8">
 						{user.image ? <AvatarImage src={user.image} alt={displayName} /> : null}
@@ -94,7 +94,10 @@ export function NavUser({ user }: { user: AppShellUser }) {
 				</div>
 				<DropdownMenuSeparator />
 				<DropdownMenuGroup>
-					<DropdownMenuItem className="gap-2.5 px-4 py-2 text-sm">
+					<DropdownMenuItem
+						className="gap-2.5 px-4 py-2 text-sm"
+						onClick={() => router.push("/dashboard/notifications")}
+					>
 						<BellIcon className="size-4" />
 						Notifications
 					</DropdownMenuItem>

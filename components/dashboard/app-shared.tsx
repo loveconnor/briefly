@@ -8,6 +8,7 @@ import {
 	FilesIcon,
 	InboxIcon,
 	LayoutGridIcon,
+	BellIcon,
 	PanelsTopLeftIcon,
 	Settings2Icon,
 	SquareKanbanIcon,
@@ -145,5 +146,10 @@ export const navLinks: SidebarNavItem[] = [
 		group.items.flatMap((item) =>
 			item.subItems?.length ? [item, ...item.subItems] : [item]
 		)
-	)
+	),
+	{
+		title: "Notifications",
+		path: "/dashboard/notifications",
+		icon: <BellIcon />,
+	},
 ];
