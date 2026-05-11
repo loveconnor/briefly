@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/lib/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 
 function Pagination({ className, ...props }: ComponentPropsWithoutRef<"nav">) {
   return (

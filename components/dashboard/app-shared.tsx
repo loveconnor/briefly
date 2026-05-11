@@ -117,11 +117,11 @@ export const navGroups: SidebarNavGroup[] = [
 				title: "Workspace",
 				icon: <Building2Icon />,
 				subItems: [
-					{ title: "Branding", path: "#/workspace/branding" },
-					{ title: "Domains", path: "#/workspace/domains" },
-					{ title: "Integrations", path: "#/workspace/integrations" },
-					{ title: "Notifications", path: "#/workspace/notifications" },
-					{ title: "API", path: "#/workspace/api" },
+					{ title: "Branding", path: "/dashboard/workspace/branding" },
+					{ title: "Domains", path: "/dashboard/workspace/domains" },
+					{ title: "Integrations", path: "/dashboard/workspace/integrations" },
+					{ title: "Notifications", path: "/dashboard/workspace/notifications" },
+					{ title: "API", path: "/dashboard/workspace/api" },
 				],
 			},
 			{

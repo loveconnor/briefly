@@ -27,7 +27,7 @@ export function SettingsSidebar({
 	searchResults: SearchResult[];
 }) {
 	return (
-		<aside className="lg:sticky lg:top-20 lg:h-[calc(100svh-7rem)]">
+		<aside className="no-scrollbar lg:sticky lg:top-6 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto lg:pr-1">
 			<div className="relative">
 				<SearchIcon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
 				<Input
