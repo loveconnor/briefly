@@ -26,12 +26,14 @@ const FIGURES: Record<Variant, string> = {
 export function AuthShell({
   children,
   variant = "welcome",
+  assetSrc,
 }: {
   children: ReactNode;
   variant?: Variant;
+  assetSrc?: string;
 }) {
   const typingImpulseRef = useRef(0);
-  const src = FIGURES[variant];
+  const src = assetSrc ?? FIGURES[variant];
   return (
     <TypingImpulseContext.Provider value={typingImpulseRef}>
       <AuthSplitLayout
