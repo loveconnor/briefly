@@ -1,5 +1,4 @@
 import { LogoIcon } from "@/components/dashboard/logo";
-import { Button } from "@/components/ui/button";
 import {
 	Sidebar,
 	SidebarContent,
@@ -13,8 +12,9 @@ import {
 import { NavGroup } from "@/components/dashboard/nav-group";
 import { navGroups } from "@/components/dashboard/app-shared";
 import { WeeklyActivityCard } from "@/components/dashboard/weekly-activity-card";
+import { WorkspaceCommandMenu } from "@/components/dashboard/workspace-command-menu";
 import { cn } from "@/lib/utils";
-import { PlusIcon, SearchIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 
 export function AppSidebar() {
@@ -48,16 +48,7 @@ export function AppSidebar() {
 							/>
 							<span>New Project</span>
 						</SidebarMenuButton>
-						<Button
-							aria-label="Search workspace"
-							className="size-8 group-data-[collapsible=icon]:opacity-0"
-							size="icon"
-							variant="outline"
-						>
-							<SearchIcon
-							/>
-							<span className="sr-only">Search workspace</span>
-						</Button>
+						<WorkspaceCommandMenu />
 					</SidebarMenuItem>
 				</SidebarGroup>
 				{navGroups.map((group, index) => (

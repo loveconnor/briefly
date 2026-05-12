@@ -215,7 +215,7 @@ export default function NotificationsDataTable({ data }: { data: Notification[] 
     },
     initialState: {
       pagination: {
-        pageSize: 10
+        pageSize: 6
       }
     },
     state: {
