@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,20 +16,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <head />
       <body className="min-h-full flex flex-col bg-background font-sans text-foreground">
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`
-            (function() {
-              try {
-                var theme = localStorage.getItem("briefly-theme");
-                var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                var isDark = theme ? theme === "dark" : prefersDark;
-                document.documentElement.classList.toggle("dark", isDark);
-                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-              } catch (_) {}
-            })();
-          `}
-        </Script>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
