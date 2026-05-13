@@ -182,6 +182,7 @@ export type ClientRecord = {
   slug: string
   name: string
   initials: string
+  avatarUrl?: string | null
   status: ClientStatus
   health: ClientHealth
   healthDetail: string
@@ -709,6 +710,7 @@ type ProjectRow = {
 }
 
 type ClientRow = {
+  avatar_data_url: string | null
   company: string | null
   created_at: Date
   email: string | null
@@ -790,6 +792,7 @@ export async function ensureAppDataTables() {
       user_id text not null,
       slug text not null,
       name text not null,
+      avatar_data_url text,
       email text,
       company text,
       status text not null default 'Active',
@@ -800,6 +803,11 @@ export async function ensureAppDataTables() {
       updated_at timestamptz not null default now(),
       unique (user_id, slug)
     )
+  `)
+
+  await db.query(`
+    alter table app_clients
+    add column if not exists avatar_data_url text
   `)
 
   await db.query(`
@@ -1557,6 +1565,7 @@ export async function getClients(user: SessionUser): Promise<ClientRecord[]> {
       slug: row.slug,
       name: row.name,
       initials: initials(row.name),
+      avatarUrl: row.avatar_data_url,
       status: deriveClientStatus(row.status, clientProjects),
       health,
       healthDetail: clientHealthDetail(health, waitingOn),
@@ -2153,7 +2162,7 @@ export async function getWorkspaceData(userId: string): Promise<WorkspaceData> {
   )
   const apiKeys = await db.query<WorkspaceData["apiKeys"][number]>(
     `
-      select id, name, key_preview as key, secret_hash as secret, created_label as created, used_label as used
+      select id, name, key_preview as key, '' as secret, created_label as created, used_label as used
       from app_api_keys
       where user_id = $1
       order by created_at desc

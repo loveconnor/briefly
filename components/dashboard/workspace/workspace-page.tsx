@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowUpRightIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -34,17 +35,22 @@ export function WorkspacePage({
 	data: WorkspaceData;
 	section: WorkspaceSection;
 }) {
+	const router = useRouter();
 	const [accentColor, setAccentColor] = useState(data.brandColor);
 	const [sheet, setSheet] = useState<SheetState>(null);
 	const copy = pageCopy[section];
+	const closeAndRefresh = () => {
+		setSheet(null);
+		router.refresh();
+	};
 
-	const sheetContent = useMemo(() => {
+	const sheetContent = (() => {
 		if (!sheet) return null;
-		if (sheet.type === "domain") return <DomainSheet />;
-		if (sheet.type === "manage-domain") return <ManageDomainSheet {...sheet} />;
+		if (sheet.type === "domain") return <DomainSheet onSaved={closeAndRefresh} />;
+		if (sheet.type === "manage-domain") return <ManageDomainSheet {...sheet} onChanged={closeAndRefresh} />;
 		if (sheet.type === "integration") return <IntegrationSheet {...sheet} />;
 		return <WebhookSheet {...sheet} />;
-	}, [sheet]);
+	})();
 
 	return (
 		<div className="mx-auto flex w-full max-w-7xl flex-col gap-9 pb-20">

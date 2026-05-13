@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import {
 	ArrowLeftIcon,
 	CalendarDaysIcon,
 	CheckCircle2Icon,
 	Clock3Icon,
+	Edit3Icon,
 	FileTextIcon,
 	FolderOpenIcon,
 	InboxIcon,
@@ -13,11 +17,28 @@ import {
 	SendIcon,
 	UploadIcon,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { type ClientHealth, type ClientRecord, type ClientStatus } from "./client-data";
@@ -37,6 +58,23 @@ const healthStyles: Record<ClientHealth, string> = {
 	"At risk": "border-warning text-warning-foreground",
 	Blocked: "border-destructive text-destructive-foreground",
 };
+
+const clientStatuses = [
+	"Active",
+	"Waiting",
+	"Blocked",
+	"Paused",
+	"Completed",
+	"Archived",
+] satisfies ClientStatus[];
+
+const statusItems = clientStatuses.map((status) => ({ label: status, value: status }));
+
+type EditableClient = ClientRecord & {
+	avatarUrl?: string | null;
+};
+
+type ClientEditDraft = Pick<EditableClient, "avatarUrl" | "name" | "status">;
 
 function getStatusBadgeProps(status: ClientStatus): {
 	className?: string;
@@ -134,7 +172,103 @@ function ProjectProgress({ project }: { project: ClientRecord["projects"][number
 	);
 }
 
-export function ClientDetail({ client }: { client: ClientRecord }) {
+function getInitials(name: string) {
+	return name
+		.split(/\s+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((part) => part[0]?.toUpperCase())
+		.join("");
+}
+
+function getClientDraft(client: EditableClient): ClientEditDraft {
+	return {
+		avatarUrl: client.avatarUrl,
+		name: client.name,
+		status: client.status,
+	};
+}
+
+function FieldLabel({
+	children,
+	htmlFor,
+}: {
+	children: string;
+	htmlFor: string;
+}) {
+	return (
+		<label className="text-xs font-medium text-muted-foreground" htmlFor={htmlFor}>
+			{children}
+		</label>
+	);
+}
+
+export function ClientDetail({ client: initialClient }: { client: ClientRecord }) {
+	const [client, setClient] = useState<EditableClient>(initialClient);
+	const [draft, setDraft] = useState<ClientEditDraft>(() => getClientDraft(initialClient));
+	const [editOpen, setEditOpen] = useState(false);
+	const [saveError, setSaveError] = useState("");
+	const [saving, setSaving] = useState(false);
+
+	function openEditSheet() {
+		setDraft(getClientDraft(client));
+		setSaveError("");
+		setEditOpen(true);
+	}
+
+	async function saveClientInfo(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		setSaveError("");
+		setSaving(true);
+
+		try {
+			const response = await fetch(`/api/clients/${client.slug}`, {
+				body: JSON.stringify({
+					avatarDataUrl: draft.avatarUrl ?? null,
+					name: draft.name,
+					status: draft.status,
+				}),
+				headers: {
+					"Content-Type": "application/json",
+				},
+				method: "PATCH",
+			});
+
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to save client info.");
+			}
+
+			setClient((current) => ({
+				...current,
+				avatarUrl: payload.client.avatarUrl,
+				initials: payload.client.initials || getInitials(payload.client.name) || current.initials,
+				name: payload.client.name,
+				status: payload.client.status,
+			}));
+			setEditOpen(false);
+		} catch (error) {
+			setSaveError(error instanceof Error ? error.message : "Unable to save client info.");
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	function updateAvatar(event: ChangeEvent<HTMLInputElement>) {
+		const file = event.target.files?.[0];
+
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === "string") {
+				setDraft((current) => ({ ...current, avatarUrl: reader.result as string }));
+			}
+		};
+		reader.readAsDataURL(file);
+	}
+
 	return (
 		<div className="space-y-8">
 			<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -146,8 +280,9 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 						</Link>
 					</Button>
 					<div className="flex min-w-0 items-center gap-3">
-						<Avatar className="size-12 rounded-lg border">
-							<AvatarFallback className="rounded-lg bg-accent text-base">
+						<Avatar className="size-12 border">
+							{client.avatarUrl ? <AvatarImage alt="" src={client.avatarUrl} /> : null}
+							<AvatarFallback className="bg-accent text-base">
 								{client.initials}
 							</AvatarFallback>
 						</Avatar>
@@ -166,6 +301,10 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 					</div>
 				</div>
 				<div className="flex flex-wrap gap-2">
+					<Button onClick={openEditSheet} variant="outline">
+						<Edit3Icon />
+						Edit info
+					</Button>
 					<Button variant="outline">
 						<MousePointerSquareDashedIcon />
 						Open portal
@@ -176,6 +315,94 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 					</Button>
 				</div>
 			</div>
+
+			<Sheet onOpenChange={setEditOpen} open={editOpen}>
+				<SheetContent className="w-[calc(100%-(--spacing(8)))] max-w-[520px] overflow-y-auto p-0" side="right">
+					<form className="flex min-h-full flex-col" onSubmit={saveClientInfo}>
+						<SheetHeader className="border-b p-6">
+							<SheetTitle>Edit client info</SheetTitle>
+							<SheetDescription>
+								Update the client details shown across this relationship page.
+							</SheetDescription>
+						</SheetHeader>
+
+						<div className="grid gap-5 p-6">
+							<div className="flex items-center gap-4">
+								<Avatar className="size-16 border">
+									{draft.avatarUrl ? <AvatarImage alt="" src={draft.avatarUrl} /> : null}
+									<AvatarFallback className="bg-accent text-lg">
+										{getInitials(draft.name) || client.initials}
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex min-w-0 flex-wrap gap-2">
+									<label className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer")}>
+										<UploadIcon />
+										Change picture
+										<input
+											accept="image/*"
+											className="sr-only"
+											onChange={updateAvatar}
+											type="file"
+										/>
+									</label>
+									{draft.avatarUrl ? (
+										<Button
+											onClick={() => setDraft((current) => ({ ...current, avatarUrl: null }))}
+											type="button"
+											variant="ghost"
+										>
+											Remove
+										</Button>
+									) : null}
+								</div>
+							</div>
+
+							<div className="grid gap-2">
+								<FieldLabel htmlFor="client-name">Client name</FieldLabel>
+								<Input
+									id="client-name"
+									onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+									value={draft.name}
+								/>
+							</div>
+
+							<div className="grid gap-2">
+								<FieldLabel htmlFor="client-status">Status</FieldLabel>
+								<Select
+									items={statusItems}
+									onValueChange={(value) => value != null && setDraft((current) => ({ ...current, status: value as ClientStatus }))}
+									value={draft.status}
+								>
+									<SelectTrigger className="w-full" id="client-status">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent alignItemWithTrigger={false}>
+										<SelectGroup>
+											{statusItems.map((item) => (
+												<SelectItem key={item.value} value={item.value}>
+													{item.label}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</div>
+							{saveError ? (
+								<p className="text-sm text-destructive-foreground">{saveError}</p>
+							) : null}
+						</div>
+
+						<SheetFooter className="border-t p-6 sm:flex-row sm:justify-end">
+							<Button disabled={saving} onClick={() => setEditOpen(false)} type="button" variant="outline">
+								Cancel
+							</Button>
+							<Button disabled={saving} type="submit">
+								{saving ? "Saving..." : "Save changes"}
+							</Button>
+						</SheetFooter>
+					</form>
+				</SheetContent>
+			</Sheet>
 
 			<div className="grid gap-x-8 gap-y-4 border-t pt-4 sm:grid-cols-2 xl:grid-cols-4">
 				<InlineMeta label="Active projects" value={`${client.activeProjects}`} />

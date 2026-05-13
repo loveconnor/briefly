@@ -5,7 +5,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { ProjectsList } from "@/components/dashboard/projects/projects-list";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
-import { getProjects } from "@/lib/app-data";
+import { getClients, getProjects } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -32,7 +32,10 @@ export default async function ProjectsPage() {
 		return <OnboardingFlow />;
 	}
 
-	const projects = await getProjects(session.user);
+	const [clients, projects] = await Promise.all([
+		getClients(session.user),
+		getProjects(session.user),
+	]);
 
 	return (
 		<AppShell
@@ -42,7 +45,7 @@ export default async function ProjectsPage() {
 				image: session.user.image,
 			}}
 		>
-			<ProjectsList projects={projects} />
+			<ProjectsList clients={clients} projects={projects} />
 		</AppShell>
 	);
 }

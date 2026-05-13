@@ -27,14 +27,42 @@ import {
 	SheetStep,
 } from "./workspace-primitives";
 
-export function DomainSheet() {
+export function DomainSheet({ onSaved }: { onSaved?: () => void }) {
 	const [domain, setDomain] = useState("");
 	const [isChecking, setIsChecking] = useState(false);
+	const [error, setError] = useState("");
+	const [pending, setPending] = useState(false);
 	const normalizedDomain = domain.trim() || "portal.acme.com";
 	const dnsHost = useMemo(() => {
 		const parts = normalizedDomain.split(".");
 		return parts.length > 2 ? parts[0] : "@";
 	}, [normalizedDomain]);
+
+	async function saveDomain() {
+		setError("");
+		setPending(true);
+		setIsChecking(true);
+
+		try {
+			const response = await fetch("/api/workspace/domains", {
+				body: JSON.stringify({ name: domain }),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to add domain.");
+			}
+
+			onSaved?.();
+		} catch (saveError) {
+			setError(saveError instanceof Error ? saveError.message : "Unable to add domain.");
+			setIsChecking(false);
+		} finally {
+			setPending(false);
+		}
+	}
 
 	return (
 		<>
@@ -90,10 +118,11 @@ export function DomainSheet() {
 							Verification has not started. Add the DNS record, then run a check.
 						</div>
 					)}
+					{error ? <p className="mt-2 text-sm text-destructive-foreground">{error}</p> : null}
 				</SheetStep>
 			</div>
 			<SheetFooter className="border-t p-6">
-				<Button disabled={!domain.trim()} onClick={() => setIsChecking(true)}>
+				<Button disabled={!domain.trim() || pending} onClick={() => void saveDomain()}>
 					Verify domain
 				</Button>
 			</SheetFooter>
@@ -106,12 +135,61 @@ export function ManageDomainSheet({
 	status,
 	ssl,
 	connected,
-}: Domain) {
+	onChanged,
+}: Domain & { onChanged?: () => void }) {
 	const [isChecking, setIsChecking] = useState(false);
+	const [error, setError] = useState("");
+	const [pending, setPending] = useState("");
 	const dnsHost = useMemo(() => {
 		const parts = name.split(".");
 		return parts.length > 2 ? parts[0] : "@";
 	}, [name]);
+
+	async function recheck() {
+		setError("");
+		setPending("recheck");
+		setIsChecking(true);
+
+		try {
+			const response = await fetch(`/api/workspace/domains/${encodeURIComponent(name)}`, {
+				method: "PATCH",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to recheck domain.");
+			}
+
+			onChanged?.();
+		} catch (checkError) {
+			setError(checkError instanceof Error ? checkError.message : "Unable to recheck domain.");
+			setIsChecking(false);
+		} finally {
+			setPending("");
+		}
+	}
+
+	async function remove() {
+		setError("");
+		setPending("remove");
+
+		try {
+			const response = await fetch(`/api/workspace/domains/${encodeURIComponent(name)}`, {
+				method: "DELETE",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to remove domain.");
+			}
+
+			onChanged?.();
+		} catch (removeError) {
+			setError(removeError instanceof Error ? removeError.message : "Unable to remove domain.");
+		} finally {
+			setPending("");
+		}
+	}
 
 	return (
 		<>
@@ -177,13 +255,14 @@ export function ManageDomainSheet({
 							No active check is running. Use recheck when DNS records have changed.
 						</div>
 					)}
+					{error ? <p className="mt-2 text-sm text-destructive-foreground">{error}</p> : null}
 				</SheetStep>
 			</div>
 			<SheetFooter className="border-t p-6">
-				<Button onClick={() => setIsChecking(true)}>
+				<Button disabled={pending === "recheck"} onClick={() => void recheck()}>
 					<RefreshCwIcon /> Recheck domain
 				</Button>
-				<Button variant="destructive">
+				<Button disabled={pending === "remove"} onClick={() => void remove()} variant="destructive">
 					<Trash2Icon /> Remove domain
 				</Button>
 			</SheetFooter>

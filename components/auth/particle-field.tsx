@@ -163,45 +163,62 @@ export function ParticleField({
   denseParticles = false,
 }: ParticleFieldProps) {
   const isDark = useDocumentDark();
-  const fillColorRef = useRef(color);
-  fillColorRef.current = adaptToTheme
+  const fillColor = adaptToTheme
     ? isDark
       ? "rgba(255, 255, 255, 0.92)"
       : "rgba(10, 12, 16, 1)"
     : color;
+  const fillColorRef = useRef(fillColor);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const pointerRef = useRef({ x: -9999, y: -9999, active: false });
-  const srcRef = useRef(src);
-  srcRef.current = src;
   const applySrcRef = useRef<((nextSrc: string) => void) | null>(null);
 
   // Tuning props live in refs so the main effect can stay mounted across
   // prop changes (e.g. onboarding step tweaks threshold + dotSize + src
   // simultaneously). Rebuilding the effect would defeat the morph.
   const sampleStepRef = useRef(sampleStep);
-  sampleStepRef.current = sampleStep;
   const thresholdRef = useRef(threshold);
-  thresholdRef.current = threshold;
   const renderScaleRef = useRef(renderScale);
-  renderScaleRef.current = renderScale;
   const dotSizeRef = useRef(dotSize);
-  dotSizeRef.current = dotSize;
   const mouseForceRef = useRef(mouseForce);
-  mouseForceRef.current = mouseForce;
   const mouseRadiusRef = useRef(mouseRadius);
-  mouseRadiusRef.current = mouseRadius;
   const springRef = useRef(spring);
-  springRef.current = spring;
   const dampingRef = useRef(damping);
-  dampingRef.current = damping;
   const alignRef = useRef(align);
-  alignRef.current = align;
   const invertRef = useRef(invert);
-  invertRef.current = invert;
   const denseParticlesRef = useRef(denseParticles);
-  denseParticlesRef.current = denseParticles;
+
+  useEffect(() => {
+    fillColorRef.current = fillColor;
+  }, [fillColor]);
+
+  useEffect(() => {
+    sampleStepRef.current = sampleStep;
+    thresholdRef.current = threshold;
+    renderScaleRef.current = renderScale;
+    dotSizeRef.current = dotSize;
+    mouseForceRef.current = mouseForce;
+    mouseRadiusRef.current = mouseRadius;
+    springRef.current = spring;
+    dampingRef.current = damping;
+    alignRef.current = align;
+    invertRef.current = invert;
+    denseParticlesRef.current = denseParticles;
+  }, [
+    align,
+    damping,
+    denseParticles,
+    dotSize,
+    invert,
+    mouseForce,
+    mouseRadius,
+    renderScale,
+    sampleStep,
+    spring,
+    threshold,
+  ]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -443,7 +460,7 @@ export function ParticleField({
       const mr = mouseRadiusV * dpr;
       const mr2 = mr * mr;
 
-      let typing = typingImpulseRef?.current ?? 0;
+      const typing = typingImpulseRef?.current ?? 0;
       if (typingImpulseRef && typing > 1e-4) {
         typingImpulseRef.current *= 0.93;
       }
@@ -564,7 +581,7 @@ export function ParticleField({
     ro.observe(wrapper);
     rafId = requestAnimationFrame(render);
 
-    loadAndApply(srcRef.current, false);
+    loadAndApply(src, false);
 
     wrapper.addEventListener("pointermove", onPointerMove);
     wrapper.addEventListener("pointerleave", onPointerLeave);

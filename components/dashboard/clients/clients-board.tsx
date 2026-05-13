@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
 	ArrowUpDownIcon,
 	CalendarDaysIcon,
@@ -14,12 +15,14 @@ import {
 	SearchIcon,
 	AlertTriangleIcon,
 	Clock3Icon,
+	PlusIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardAction,
@@ -28,7 +31,16 @@ import {
 	CardPanel,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
 	Select,
@@ -147,8 +159,9 @@ function ClientCard({ client }: { client: ClientRecord }) {
 			<Card className="gap-4 rounded-lg py-5 transition-[background-color,box-shadow,transform] group-hover:-translate-y-0.5 group-hover:shadow-xl group-hover:shadow-foreground/8">
 				<CardHeader className="px-5">
 					<div className="flex min-w-0 items-center gap-3">
-						<Avatar className="size-10 rounded-lg border">
-							<AvatarFallback className="rounded-lg bg-accent text-sm">
+						<Avatar className="size-10 border">
+							{client.avatarUrl ? <AvatarImage alt="" src={client.avatarUrl} /> : null}
+							<AvatarFallback className="bg-accent text-sm">
 								{client.initials}
 							</AvatarFallback>
 						</Avatar>
@@ -186,10 +199,18 @@ function ClientCard({ client }: { client: ClientRecord }) {
 }
 
 export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
+	const router = useRouter();
 	const [query, setQuery] = useState("");
 	const [status, setStatus] = useState<ClientStatus | "All">("All");
 	const [sort, setSort] = useState("attention");
 	const [view, setView] = useState("grid");
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [newClientName, setNewClientName] = useState("");
+	const [newClientEmail, setNewClientEmail] = useState("");
+	const [newClientCompany, setNewClientCompany] = useState("");
+	const [newClientStatus, setNewClientStatus] = useState<ClientStatus>("Active");
+	const [pending, setPending] = useState(false);
+	const [error, setError] = useState("");
 
 	const visibleClients = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -217,7 +238,7 @@ export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 				if (sort === "activity") return a.lastActivity.localeCompare(b.lastActivity);
 				return healthOrder[a.health] - healthOrder[b.health];
 			});
-	}, [query, sort, status]);
+	}, [clients, query, sort, status]);
 
 	const counts = {
 		active: clients.filter((client) => client.status === "Active").length,
@@ -226,14 +247,131 @@ export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 		attention: clients.filter((client) => client.health !== "Healthy").length,
 	};
 
+	async function createClient(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		setError("");
+		setPending(true);
+
+		try {
+			const response = await fetch("/api/clients", {
+				body: JSON.stringify({
+					company: newClientCompany,
+					email: newClientEmail,
+					name: newClientName,
+					status: newClientStatus,
+				}),
+				headers: {
+					"Content-Type": "application/json",
+				},
+				method: "POST",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to create client.");
+			}
+
+			setDialogOpen(false);
+			router.push(`/dashboard/clients/${payload.client.slug}`);
+			router.refresh();
+		} catch (createError) {
+			setError(createError instanceof Error ? createError.message : "Unable to create client.");
+		} finally {
+			setPending(false);
+		}
+	}
+
 	return (
 		<div className="space-y-7">
-			<div className="flex flex-wrap gap-x-8 gap-y-4 border-b pb-5">
-				<InlineStat label="Active clients" tone="good" value={`${counts.active}`} />
-				<InlineStat label="Need attention" tone="warning" value={`${counts.attention}`} />
-				<InlineStat label="Waiting" tone="warning" value={`${counts.waiting}`} />
-				<InlineStat label="Blocked" tone="danger" value={`${counts.blocked}`} />
+			<div className="flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-center lg:justify-between">
+				<div className="flex flex-wrap gap-x-8 gap-y-4">
+					<InlineStat label="Active clients" tone="good" value={`${counts.active}`} />
+					<InlineStat label="Need attention" tone="warning" value={`${counts.attention}`} />
+					<InlineStat label="Waiting" tone="warning" value={`${counts.waiting}`} />
+					<InlineStat label="Blocked" tone="danger" value={`${counts.blocked}`} />
+				</div>
+				<Button className="w-fit" onClick={() => setDialogOpen(true)}>
+					<PlusIcon />
+					New client
+				</Button>
 			</div>
+
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent>
+					<form onSubmit={createClient}>
+						<DialogHeader>
+							<DialogTitle>New client</DialogTitle>
+							<DialogDescription>
+								Add a client relationship to track projects, requests, files, and portal activity.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-4 py-2">
+							<label className="grid gap-2 text-sm">
+								<span className="font-medium">Client name</span>
+								<Input
+									onChange={(event) => setNewClientName(event.target.value)}
+									required
+									value={newClientName}
+								/>
+							</label>
+							<label className="grid gap-2 text-sm">
+								<span className="font-medium">Email</span>
+								<Input
+									onChange={(event) => setNewClientEmail(event.target.value)}
+									placeholder="client@example.com"
+									type="email"
+									value={newClientEmail}
+								/>
+							</label>
+							<label className="grid gap-2 text-sm">
+								<span className="font-medium">Company</span>
+								<Input
+									onChange={(event) => setNewClientCompany(event.target.value)}
+									value={newClientCompany}
+								/>
+							</label>
+							<div className="grid gap-2 text-sm">
+								<span className="font-medium">Status</span>
+								<Field>
+									<Select
+										items={statusItems.filter((item) => item.value !== "All")}
+										onValueChange={(value) => value != null && setNewClientStatus(value as ClientStatus)}
+										value={newClientStatus}
+									>
+										<SelectTrigger>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent alignItemWithTrigger={false}>
+											<SelectGroup>
+												{statusItems
+													.filter((item) => item.value !== "All")
+													.map((item) => (
+														<SelectItem key={item.value} value={item.value}>
+															{item.label}
+														</SelectItem>
+													))}
+											</SelectGroup>
+										</SelectContent>
+									</Select>
+								</Field>
+							</div>
+							{error ? <p className="text-sm text-destructive-foreground">{error}</p> : null}
+						</div>
+						<DialogFooter>
+							<Button
+								onClick={() => setDialogOpen(false)}
+								type="button"
+								variant="outline"
+							>
+								Cancel
+							</Button>
+							<Button disabled={pending || !newClientName.trim()} type="submit">
+								{pending ? "Creating..." : "Create client"}
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 
 			<div className="flex flex-col gap-3 md:flex-row md:items-center">
 				<Field className="min-w-0 flex-1">
@@ -324,8 +462,9 @@ export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 								key={client.slug}
 							>
 								<div className="flex min-w-0 items-center gap-3">
-									<Avatar className="size-9 rounded-lg border">
-										<AvatarFallback className="rounded-lg bg-accent">
+									<Avatar className="size-9 border">
+										{client.avatarUrl ? <AvatarImage alt="" src={client.avatarUrl} /> : null}
+										<AvatarFallback className="bg-accent">
 											{client.initials}
 										</AvatarFallback>
 									</Avatar>

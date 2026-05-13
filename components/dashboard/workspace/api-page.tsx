@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
 	CheckIcon,
 	ExternalLinkIcon,
@@ -32,12 +33,6 @@ type ApiKey = {
 	secret: string;
 };
 
-function keySuffix(seed: number) {
-	return `${["a8Kp", "z4Lm", "q9Nt"][seed % 3] ?? "n6Qr"}${Math.random()
-		.toString(36)
-		.slice(2, 10)}`;
-}
-
 export function ApiPage({
 	apiKeys,
 	onOpenWebhook,
@@ -47,74 +42,136 @@ export function ApiPage({
 	onOpenWebhook: (webhook: Webhook) => void;
 	webhooks: Webhook[];
 }) {
+	const router = useRouter();
 	const [keys, setKeys] = useState<ApiKey[]>(apiKeys);
 	const [revealedKeys, setRevealedKeys] = useState<Record<string, boolean>>({});
 	const [webhookRows, setWebhookRows] = useState<Webhook[]>(webhooks);
 	const [isEndpointDialogOpen, setIsEndpointDialogOpen] = useState(false);
 	const [newEvent, setNewEvent] = useState("client.approved");
 	const [newEndpoint, setNewEndpoint] = useState("");
+	const [error, setError] = useState("");
+	const [pendingAction, setPendingAction] = useState("");
 
-	const createKey = () => {
+	const createKey = async () => {
+		setError("");
+		setPendingAction("create-key");
 		const count = keys.length + 1;
-		const id = `key-${Date.now()}`;
-		const secret = `brf_live_${keySuffix(count)}`;
 
-		setKeys((current) => [
-			...current,
-			{
-				id,
-				name: `Production key ${count}`,
-				created: "Created just now",
-				used: "Never used",
-				key: `••••••••••••••••${secret.slice(-4)}`,
-				secret,
-			},
-		]);
-		setRevealedKeys((current) => ({ ...current, [id]: true }));
+		try {
+			const response = await fetch("/api/workspace/api-keys", {
+				body: JSON.stringify({ name: `Production key ${count}` }),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to create API key.");
+			}
+
+			setKeys((current) => [payload.key, ...current]);
+			setRevealedKeys((current) => ({ ...current, [payload.key.id]: true }));
+			router.refresh();
+		} catch (createError) {
+			setError(createError instanceof Error ? createError.message : "Unable to create API key.");
+		} finally {
+			setPendingAction("");
+		}
 	};
 
-	const rotateKey = (id: string) => {
-		const secret = `brf_live_${keySuffix(keys.length)}`;
+	const rotateKey = async (id: string) => {
+		setError("");
+		setPendingAction(`rotate-${id}`);
 
-		setKeys((current) =>
-			current.map((key) =>
-				key.id === id
-					? {
-							...key,
-							key: `••••••••••••••••${secret.slice(-4)}`,
-							secret,
-							used: "Rotated just now",
-						}
-					: key
-			)
-		);
-		setRevealedKeys((current) => ({ ...current, [id]: true }));
+		try {
+			const response = await fetch(`/api/workspace/api-keys/${encodeURIComponent(id)}`, {
+				method: "PATCH",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to rotate API key.");
+			}
+
+			setKeys((current) =>
+				current.map((key) =>
+					key.id === id
+						? {
+								...key,
+								key: payload.key.key,
+								secret: payload.key.secret,
+								used: payload.key.used,
+							}
+						: key
+				)
+			);
+			setRevealedKeys((current) => ({ ...current, [id]: true }));
+			router.refresh();
+		} catch (rotateError) {
+			setError(rotateError instanceof Error ? rotateError.message : "Unable to rotate API key.");
+		} finally {
+			setPendingAction("");
+		}
 	};
 
-	const revokeKey = (id: string) => {
-		setKeys((current) => current.filter((key) => key.id !== id));
-		setRevealedKeys((current) => {
-			const next = { ...current };
-			delete next[id];
-			return next;
-		});
+	const revokeKey = async (id: string) => {
+		setError("");
+		setPendingAction(`revoke-${id}`);
+
+		try {
+			const response = await fetch(`/api/workspace/api-keys/${encodeURIComponent(id)}`, {
+				method: "DELETE",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to revoke API key.");
+			}
+
+			setKeys((current) => current.filter((key) => key.id !== id));
+			setRevealedKeys((current) => {
+				const next = { ...current };
+				delete next[id];
+				return next;
+			});
+			router.refresh();
+		} catch (revokeError) {
+			setError(revokeError instanceof Error ? revokeError.message : "Unable to revoke API key.");
+		} finally {
+			setPendingAction("");
+		}
 	};
 
-	const addEndpoint = () => {
+	const addEndpoint = async () => {
 		if (!newEvent.trim() || !newEndpoint.trim()) return;
+		setError("");
+		setPendingAction("add-webhook");
 
-		setWebhookRows((current) => [
-			...current,
-			{
-				event: newEvent.trim(),
-				endpoint: newEndpoint.trim(),
-				status: "DNS pending",
-				last: "Added just now",
-			},
-		]);
-		setNewEvent("client.approved");
-		setNewEndpoint("");
-		setIsEndpointDialogOpen(false);
+		try {
+			const response = await fetch("/api/workspace/webhooks", {
+				body: JSON.stringify({
+					endpoint: newEndpoint,
+					event: newEvent,
+				}),
+				headers: { "Content-Type": "application/json" },
+				method: "POST",
+			});
+			const payload = await response.json();
+
+			if (!response.ok) {
+				throw new Error(payload.error ?? "Unable to add webhook endpoint.");
+			}
+
+			setWebhookRows((current) => [payload.webhook, ...current]);
+			setNewEvent("client.approved");
+			setNewEndpoint("");
+			setIsEndpointDialogOpen(false);
+			router.refresh();
+		} catch (webhookError) {
+			setError(webhookError instanceof Error ? webhookError.message : "Unable to add webhook endpoint.");
+		} finally {
+			setPendingAction("");
+		}
 	};
 
 	return (
@@ -127,10 +184,11 @@ export function ApiPage({
 							Keys are scoped to this workspace and should be rotated regularly.
 						</p>
 					</div>
-					<Button onClick={createKey}>
+					<Button disabled={pendingAction === "create-key"} onClick={() => void createKey()}>
 						<KeyRoundIcon /> Create key
 					</Button>
 				</div>
+				{error ? <p className="mt-3 text-sm text-destructive-foreground">{error}</p> : null}
 				<div className="mt-6 divide-y border-y">
 					{keys.map((key) => {
 						const isRevealed = Boolean(revealedKeys[key.id]);
@@ -147,7 +205,7 @@ export function ApiPage({
 									</p>
 								</div>
 								<code className="truncate text-sm text-muted-foreground">
-									{isRevealed ? key.secret : key.key}
+									{isRevealed && key.secret ? key.secret : key.key}
 								</code>
 								<div className="flex flex-wrap gap-2">
 									<Button
@@ -163,14 +221,16 @@ export function ApiPage({
 										{isRevealed ? "Hide" : "Reveal"}
 									</Button>
 									<Button
-										onClick={() => rotateKey(key.id)}
+										disabled={pendingAction === `rotate-${key.id}`}
+										onClick={() => void rotateKey(key.id)}
 										size="sm"
 										variant="outline"
 									>
 										Rotate
 									</Button>
 									<Button
-										onClick={() => revokeKey(key.id)}
+										disabled={pendingAction === `revoke-${key.id}`}
+										onClick={() => void revokeKey(key.id)}
 										size="sm"
 										variant="ghost"
 									>
@@ -266,7 +326,10 @@ export function ApiPage({
 						>
 							Cancel
 						</Button>
-						<Button disabled={!newEndpoint.trim()} onClick={addEndpoint}>
+						<Button
+							disabled={!newEndpoint.trim() || pendingAction === "add-webhook"}
+							onClick={() => void addEndpoint()}
+						>
 							<PlusIcon /> Add endpoint
 						</Button>
 					</DialogFooter>

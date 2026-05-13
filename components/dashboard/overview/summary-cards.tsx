@@ -1,5 +1,8 @@
 import { BriefcaseBusiness, ClipboardCheck, MessageSquareWarning, SendHorizontal } from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
 import type { OverviewData } from "@/lib/app-data";
+import { cn } from "@/lib/utils";
 
 const iconMap = {
   approvals: ClipboardCheck,
@@ -10,22 +13,30 @@ const iconMap = {
 
 export function SummaryCards({ summary }: { summary: OverviewData["summary"] }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {summary.map((item) => {
         const Icon = iconMap[item.icon];
 
         return (
-          <div key={item.label} className="flex items-center gap-3">
-            <div className="text-muted-foreground flex size-8 shrink-0 items-center justify-center">
-              <Icon className="size-4" strokeWidth={2.2} />
-            </div>
-            <div className="min-w-0">
-              <div className="font-display text-2xl leading-none tracking-tight lg:text-3xl">{item.value}</div>
-              <div className="text-muted-foreground mt-1 text-sm leading-5">{item.label}</div>
-            </div>
-          </div>
+          <Card key={item.label} className="p-6 py-4 shadow-2xs">
+            <CardContent className="p-0">
+              <dt className="flex items-center justify-between gap-3 text-sm font-medium lowercase text-muted-foreground">
+                <span>{item.label}</span>
+                <Icon className="size-4 shrink-0" strokeWidth={2.2} />
+              </dt>
+              <dd className="mt-2 flex items-baseline space-x-2.5">
+                <span
+                  className={cn(
+                    "font-display tabular-nums text-3xl font-semibold leading-none text-foreground"
+                  )}
+                >
+                  {item.value}
+                </span>
+              </dd>
+            </CardContent>
+          </Card>
         );
       })}
-    </div>
+    </dl>
   );
 }
