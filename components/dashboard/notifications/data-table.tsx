@@ -23,6 +23,7 @@ import {
   FileText,
   FolderOpen,
   MessageSquare,
+  SearchIcon,
   Users,
   ChevronDown
 } from "lucide-react";
@@ -43,7 +44,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
   Table,
   TableBody,
@@ -267,12 +269,18 @@ export default function NotificationsDataTable({ data }: { data: Notification[] 
   return (
     <div className="space-y-6">
       <div className="flex gap-3">
-        <Input
-          placeholder="Search notifications..."
-          value={globalFilter ?? ""}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="grow"
-        />
+        <Field className="grow">
+          <InputGroup>
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder="Search notifications..."
+              value={globalFilter ?? ""}
+              onChange={(event) => setGlobalFilter(event.target.value)}
+            />
+          </InputGroup>
+        </Field>
         <div className="hidden gap-2 md:flex">
           <Popover>
             <PopoverTrigger asChild>

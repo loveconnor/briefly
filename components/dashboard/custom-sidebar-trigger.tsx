@@ -8,8 +8,8 @@ import {
 
 export function CustomSidebarTrigger() {
 	return (
-		<Tooltip delayDuration={1000}>
-			<TooltipTrigger asChild>
+		<Tooltip>
+			<TooltipTrigger asChild delay={1000}>
 				<SidebarTrigger />
 			</TooltipTrigger>
 			<TooltipContent className="px-2 py-1" side="right">

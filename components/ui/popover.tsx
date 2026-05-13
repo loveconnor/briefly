@@ -1,115 +1,86 @@
 "use client"
 
 import * as React from "react"
-import { mergeProps } from "@base-ui-components/react/merge-props"
-import { Popover as PopoverPrimitive } from "@base-ui-components/react/popover"
+import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { cn } from "@/lib/utils"
 
-const Popover = PopoverPrimitive.Root
-
-type PopoverTriggerProps = PopoverPrimitive.Trigger.Props & {
-  asChild?: boolean
-  children?: React.ReactNode
+function Popover({ ...props }: PopoverPrimitive.Root.Props) {
+  return <PopoverPrimitive.Root data-slot="popover" {...props} />
 }
 
 function PopoverTrigger({
   asChild,
   children,
+  render,
   ...props
-}: PopoverTriggerProps) {
-  if (asChild) {
-    if (!React.isValidElement(children)) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(
-          "[loveui] PopoverTrigger with `asChild` expects a single React element child."
-        )
-      }
-      return null
-    }
+}: PopoverPrimitive.Trigger.Props & { asChild?: boolean }) {
+  const triggerRender = asChild
+    ? React.isValidElement(children)
+      ? children
+      : <span>{children}</span>
+    : render
 
-    const child = children as React.ReactElement
-
-    return (
-      <PopoverPrimitive.Trigger
-        {...props}
-        render={(triggerProps) => {
-          const { ref: triggerRef, ...restTriggerProps } = triggerProps
-          const { asChild: _childAsChild, ...restChildProps } =
-            (child.props ?? {}) as Record<string, unknown>
-
-          const childRef = (child.props as any).ref as
-            | React.Ref<HTMLElement>
-            | null
-            | undefined
-
-          const mergedProps = mergeProps(restTriggerProps, restChildProps)
-
-          if (!mergedProps["data-slot"]) {
-            mergedProps["data-slot"] = "popover-trigger"
-          }
-
-          mergedProps.ref = composeRefs(
-            triggerRef as React.Ref<HTMLElement>,
-            childRef ?? undefined
-          )
-
-          return React.cloneElement(child, mergedProps)
-        }}
-      />
-    )
-  }
-
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+  return (
+    <PopoverPrimitive.Trigger
+      data-slot="popover-trigger"
+      render={triggerRender}
+      {...props}
+    >
+      {asChild ? undefined : children}
+    </PopoverPrimitive.Trigger>
+  )
 }
 
-function PopoverPopup({
-  children,
+function PopoverContent({
   className,
-  side = "bottom",
   align = "center",
+  alignOffset = 0,
+  side = "bottom",
   sideOffset = 4,
   ...props
-}: PopoverPrimitive.Popup.Props & {
-  side?: PopoverPrimitive.Positioner.Props["side"]
-  align?: PopoverPrimitive.Positioner.Props["align"]
-  sideOffset?: PopoverPrimitive.Positioner.Props["sideOffset"]
-}) {
+}: PopoverPrimitive.Popup.Props &
+  Pick<
+    PopoverPrimitive.Positioner.Props,
+    "align" | "alignOffset" | "side" | "sideOffset"
+  >) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
-        data-slot="popover-positioner"
-        className="z-50"
+        align={align}
+        alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        align={align}
+        className="isolate z-50"
       >
-        <span className="relative flex origin-(--transform-origin) rounded-lg border bg-popover bg-clip-padding shadow-lg transition-[scale,opacity] before:pointer-events-none before:absolute before:inset-0 before:rounded-[calc(var(--radius-lg)-1px)] before:shadow-[0_1px_--theme(--color-black/4%)] has-data-starting-style:scale-98 has-data-starting-style:opacity-0 dark:bg-clip-border dark:before:shadow-[0_-1px_--theme(--color-white/8%)]">
-          <PopoverPrimitive.Popup
-            data-slot="popover-content"
-            className={cn(
-              "max-h-(--available-height) min-w-80 overflow-y-auto p-4",
-              className
-            )}
-            {...props}
-          >
-            {children}
-          </PopoverPrimitive.Popup>
-        </span>
+        <PopoverPrimitive.Popup
+          data-slot="popover-content"
+          className={cn(
+            "z-50 flex w-72 origin-(--transform-origin) flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            className
+          )}
+          {...props}
+        />
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
   )
 }
 
-function PopoverClose({ ...props }: PopoverPrimitive.Close.Props) {
-  return <PopoverPrimitive.Close data-slot="popover-close" {...props} />
+function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="popover-header"
+      className={cn("flex flex-col gap-0.5 text-sm", className)}
+      {...props}
+    />
+  )
 }
 
 function PopoverTitle({ className, ...props }: PopoverPrimitive.Title.Props) {
   return (
     <PopoverPrimitive.Title
       data-slot="popover-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn("font-medium", className)}
       {...props}
     />
   )
@@ -122,7 +93,7 @@ function PopoverDescription({
   return (
     <PopoverPrimitive.Description
       data-slot="popover-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-muted-foreground", className)}
       {...props}
     />
   )
@@ -130,29 +101,9 @@ function PopoverDescription({
 
 export {
   Popover,
-  PopoverTrigger,
-  PopoverPopup,
-  PopoverPopup as PopoverContent,
-  PopoverTitle,
+  PopoverContent,
   PopoverDescription,
-  PopoverClose,
-}
-
-function composeRefs<T>(
-  ...refs: Array<React.Ref<T> | undefined>
-): (instance: T | null) => void {
-  return (instance) => {
-    for (const ref of refs) {
-      if (!ref) continue
-      if (typeof ref === "function") {
-        ref(instance)
-      } else {
-        try {
-          ;(ref as React.MutableRefObject<T | null>).current = instance
-        } catch {
-          // ignore assignment errors for immutable refs
-        }
-      }
-    }
-  }
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
 }

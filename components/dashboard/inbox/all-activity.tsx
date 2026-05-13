@@ -28,7 +28,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
 const activityItems = [
@@ -277,16 +278,19 @@ function ActivityToolbar({
 }) {
 	return (
 		<div className="flex flex-col gap-3 md:flex-row md:items-center">
-			<div className="relative min-w-0 flex-1">
-				<Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-				<Input
-					className="[&_[data-slot=input]]:pl-9"
+			<Field className="min-w-0 flex-1">
+				<InputGroup>
+					<InputGroupAddon>
+						<Search />
+					</InputGroupAddon>
+					<InputGroupInput
 					onChange={(event) => onQueryChange(event.currentTarget.value)}
 					placeholder="Search activity"
 					type="search"
 					value={query}
 				/>
-			</div>
+				</InputGroup>
+			</Field>
 			<div className="grid grid-cols-2 gap-2 sm:flex">
 				<FilterMenu label="Client" items={clients} onChange={onClientChange} selectedItems={selectedClients} />
 				<FilterMenu label="Project" items={projects} onChange={onProjectChange} selectedItems={selectedProjects} />

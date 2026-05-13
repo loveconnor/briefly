@@ -16,7 +16,8 @@ import {
 import { ArrowUpDown, ChevronDown, Search } from "lucide-react";
 
 import { buttonVariants, Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -439,15 +440,18 @@ export function Reports() {
   return (
     <div className="space-y-4">
       <div className="z-0 mt-0 flex items-center justify-start gap-3 lg:-mt-14 lg:justify-end">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-foreground/50" />
-          <Input
+        <Field className="w-[250px] md:w-[300px]">
+          <InputGroup>
+            <InputGroupAddon>
+              <Search className="text-foreground/50" />
+            </InputGroupAddon>
+            <InputGroupInput
             placeholder="Search projects..."
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="w-[250px] pl-8 md:w-[300px]"
           />
-        </div>
+          </InputGroup>
+        </Field>
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(buttonVariants({ variant: "outline" }))}>
             Columns <ChevronDown className="ml-2 h-4 w-4" />

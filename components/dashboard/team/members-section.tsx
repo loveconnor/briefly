@@ -1,7 +1,8 @@
 "use client";
 
 import { Clock3Icon, MailIcon, SearchIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { MemberRow } from "@/components/dashboard/team/member-row";
 import type { Member, TeamFilter } from "@/components/dashboard/team/team-types";
@@ -45,17 +46,20 @@ export function MembersSection({
 						))}
 					</div>
 				</div>
-				<div className="relative min-w-0 md:w-72">
-					<SearchIcon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-					<Input
+				<Field className="min-w-0 md:w-72">
+					<InputGroup className="border-transparent bg-muted/60 shadow-none">
+						<InputGroupAddon>
+							<SearchIcon />
+						</InputGroupAddon>
+						<InputGroupInput
 						aria-label="Search members"
-						className="border-transparent bg-muted/60 pl-9 shadow-none"
 						onChange={(event) => onQueryChange(event.target.value)}
 						placeholder="Search members..."
 						type="search"
 						value={query}
 					/>
-				</div>
+					</InputGroup>
+				</Field>
 			</div>
 			<div className="mt-6 space-y-2">
 				{filter === "Pending" ? (

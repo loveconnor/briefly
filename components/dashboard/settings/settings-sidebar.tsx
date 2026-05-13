@@ -2,7 +2,8 @@
 
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { settingsGroups } from "./settings-data";
 import type { SettingsKey } from "./settings-types";
@@ -28,17 +29,20 @@ export function SettingsSidebar({
 }) {
 	return (
 		<aside className="no-scrollbar lg:sticky lg:top-6 lg:max-h-[calc(100svh-8rem)] lg:overflow-y-auto lg:pr-1">
-			<div className="relative">
-				<SearchIcon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-				<Input
+			<Field>
+				<InputGroup className="border-transparent bg-muted/55 shadow-none">
+					<InputGroupAddon>
+						<SearchIcon />
+					</InputGroupAddon>
+					<InputGroupInput
 					aria-label="Search settings"
-					className="border-transparent bg-muted/55 pl-9 shadow-none"
 					onChange={(event) => onQueryChange(event.target.value)}
 					placeholder="Search settings..."
 					type="search"
 					value={query}
 				/>
-			</div>
+				</InputGroup>
+			</Field>
 
 			{searchResults.length ? (
 				<div className="mt-3 border-b pb-4">

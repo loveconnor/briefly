@@ -1,7 +1,8 @@
 import { ListFilterIcon, SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
 import { type Automation, filterOptions } from "./automations-data";
@@ -33,17 +34,20 @@ export function AutomationRulesSection({
 					</p>
 				</div>
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-					<div className="relative min-w-0 sm:w-72">
-						<SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-						<Input
+					<Field className="min-w-0 sm:w-72">
+						<InputGroup>
+							<InputGroupAddon>
+								<SearchIcon />
+							</InputGroupAddon>
+							<InputGroupInput
 							aria-label="Search automations"
-							className="h-8 [&_[data-slot=input]]:pl-8"
 							onChange={(event) => onQueryChange(event.target.value)}
 							placeholder="Search automations..."
 							type="search"
 							value={query}
 						/>
-					</div>
+						</InputGroup>
+					</Field>
 					<Button className="h-8 justify-start" size="sm" variant="outline">
 						<ListFilterIcon />
 						Filters

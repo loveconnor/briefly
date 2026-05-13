@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
-import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { ChevronRightIcon, CheckIcon } from "lucide-react"
 
 function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -14,32 +14,8 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
   return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
 }
 
-type DropdownMenuTriggerProps = MenuPrimitive.Trigger.Props & {
-  asChild?: boolean
-}
-
-function DropdownMenuTrigger({
-  asChild = false,
-  children,
-  render,
-  nativeButton,
-  ...props
-}: DropdownMenuTriggerProps) {
-  const resolvedRender = asChild
-    ? (render ?? (children as React.ReactElement))
-    : render
-  const resolvedNativeButton = asChild ? false : nativeButton
-
-  return (
-    <MenuPrimitive.Trigger
-      data-slot="dropdown-menu-trigger"
-      render={resolvedRender}
-      nativeButton={resolvedNativeButton}
-      {...props}
-    >
-      {asChild ? null : children}
-    </MenuPrimitive.Trigger>
-  )
+function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
+  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
 }
 
 function DropdownMenuContent({
@@ -81,11 +57,11 @@ function DropdownMenuLabel({
   className,
   inset,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & {
+}: MenuPrimitive.GroupLabel.Props & {
   inset?: boolean
 }) {
   return (
-    <div
+    <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
@@ -143,7 +119,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon className="cn-rtl-flip ml-auto" />
+      <ChevronRightIcon className="ml-auto" />
     </MenuPrimitive.SubmenuTrigger>
   )
 }
@@ -194,7 +170,8 @@ function DropdownMenuCheckboxItem({
         data-slot="dropdown-menu-checkbox-item-indicator"
       >
         <MenuPrimitive.CheckboxItemIndicator>
-          <CheckIcon />
+          <CheckIcon
+          />
         </MenuPrimitive.CheckboxItemIndicator>
       </span>
       {children}
@@ -234,7 +211,8 @@ function DropdownMenuRadioItem({
         data-slot="dropdown-menu-radio-item-indicator"
       >
         <MenuPrimitive.RadioItemIndicator>
-          <CheckIcon />
+          <CheckIcon
+          />
         </MenuPrimitive.RadioItemIndicator>
       </span>
       {children}

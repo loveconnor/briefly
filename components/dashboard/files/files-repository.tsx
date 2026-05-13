@@ -17,6 +17,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -25,7 +26,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
 	Select,
 	SelectContent,
@@ -264,17 +265,20 @@ export function FilesRepository() {
 					</p>
 				</div>
 				<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-					<div className="relative min-w-0 flex-1">
-						<SearchIcon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-						<Input
+					<Field className="min-w-0 flex-1">
+						<InputGroup>
+							<InputGroupAddon>
+								<SearchIcon />
+							</InputGroupAddon>
+							<InputGroupInput
 							aria-label="Search files"
-							className="pl-9"
 							onChange={(event) => setQuery(event.target.value)}
 							placeholder="Search files..."
 							type="search"
 							value={query}
 						/>
-					</div>
+						</InputGroup>
+					</Field>
 					<div className="grid gap-2 sm:grid-cols-2 lg:flex">
 						<FilterSelect label="Type" onChange={setType} options={typeOptions} value={type} />
 						<FilterSelect label="Status" onChange={setStatus} options={statusOptions} value={status} />

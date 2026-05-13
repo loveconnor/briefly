@@ -1,6 +1,7 @@
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 import { templateFilters, type TemplateCategory } from "./templates-data";
 
@@ -17,16 +18,19 @@ export function TemplatesToolbar({
 }) {
 	return (
 		<div className="space-y-4">
-			<label className="relative block max-w-xl">
+			<Field className="max-w-xl">
 				<span className="sr-only">Search templates</span>
-				<SearchIcon className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-				<Input
-					className="pl-9"
+				<InputGroup>
+					<InputGroupAddon>
+						<SearchIcon />
+					</InputGroupAddon>
+					<InputGroupInput
 					onChange={(event) => onQueryChange(event.target.value)}
 					placeholder="Search templates..."
 					value={query}
 				/>
-			</label>
+				</InputGroup>
+			</Field>
 
 			<nav aria-label="Template filters" className="flex flex-wrap gap-x-4 gap-y-2">
 				{templateFilters.map((filter) => (

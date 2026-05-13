@@ -2,8 +2,9 @@
 
 import { SearchIcon } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
 import { FilterSelect } from "@/components/dashboard/updates/filter-select";
+import { Field } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { formatUpdateType } from "@/components/dashboard/updates/format-update-type";
 import type { UpdateType } from "@/components/dashboard/updates/types";
 
@@ -44,17 +45,20 @@ export function UpdatesToolbar({
 }) {
 	return (
 		<div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-			<div className="relative min-w-0 flex-1">
-				<SearchIcon className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
-				<Input
+			<Field className="min-w-0 flex-1">
+				<InputGroup>
+					<InputGroupAddon>
+						<SearchIcon />
+					</InputGroupAddon>
+					<InputGroupInput
 					aria-label="Search updates"
-					className="[&_[data-slot=input]]:pl-9"
 					onChange={(event) => onQueryChange(event.currentTarget.value)}
 					placeholder="Search updates..."
 					type="search"
 					value={query}
 				/>
-			</div>
+				</InputGroup>
+			</Field>
 			<div className="grid grid-cols-2 gap-2 md:flex">
 				<FilterSelect label="Project" onChange={onProjectChange} options={projects} value={project} />
 				<FilterSelect

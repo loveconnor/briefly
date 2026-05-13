@@ -1,6 +1,9 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Metadata } from "next";
+import type { Metadata } from "next";
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://briefly.so";
+
 export function generateMeta({
   title,
   additionalTitle = false,
@@ -13,14 +16,17 @@ export function generateMeta({
   canonical: string;
 }): Metadata {
   return {
-    title: `${title} for Shadcn UI${additionalTitle ? " – Admin Dashboard Template" : ""}`,
+    title: `${title}${additionalTitle ? " | Briefly" : ""}`,
     description: description,
-    metadataBase: new URL(`https://shadcnuikit.com`),
+    metadataBase: new URL(appUrl),
     alternates: {
-      canonical: `/dashboard${canonical}`
+      canonical
     },
     openGraph: {
-      images: [`/images/seo.jpg`]
+      title: `${title} | Briefly`,
+      description,
+      siteName: "Briefly",
+      images: [`/assets/welcome.png`]
     }
   };
 }
