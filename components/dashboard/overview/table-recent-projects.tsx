@@ -37,156 +37,14 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-
-const data: Project[] = [
-  {
-    id: 1,
-    name: "Homepage Redesign",
-    client: {
-      name: "Acme Studio"
-    },
-    phase: "Design Review",
-    status: "waiting",
-    waitingOn: "Client Approval",
-    progress: 68
-  },
-  {
-    id: 2,
-    name: "Brand Portal",
-    client: {
-      name: "Nova Collective"
-    },
-    phase: "Content Intake",
-    status: "blocked",
-    waitingOn: "Assets",
-    progress: 34
-  },
-  {
-    id: 3,
-    name: "Landing Page",
-    client: {
-      name: "Brightside"
-    },
-    phase: "Client Review",
-    status: "review",
-    waitingOn: "Copy Feedback",
-    progress: 82
-  },
-  {
-    id: 4,
-    name: "Website Launch",
-    client: {
-      name: "Northstar Labs"
-    },
-    phase: "Final QA",
-    status: "active",
-    waitingOn: "Development",
-    progress: 91
-  },
-  {
-    id: 5,
-    name: "SEO Audit",
-    client: {
-      name: "Luma Works"
-    },
-    phase: "Delivery Prep",
-    status: "active",
-    waitingOn: "Internal Review",
-    progress: 76
-  },
-  {
-    id: 6,
-    name: "Product Photography",
-    client: {
-      name: "Fieldstone"
-    },
-    phase: "Asset Collection",
-    status: "waiting",
-    waitingOn: "Client Upload",
-    progress: 28
-  },
-  {
-    id: 7,
-    name: "Membership Checkout",
-    client: {
-      name: "Atlas Club"
-    },
-    phase: "Build",
-    status: "active",
-    waitingOn: "Development",
-    progress: 54
-  },
-  {
-    id: 8,
-    name: "Case Study Page",
-    client: {
-      name: "Evergreen"
-    },
-    phase: "Copy Review",
-    status: "review",
-    waitingOn: "Client Approval",
-    progress: 73
-  },
-  {
-    id: 9,
-    name: "Booking Flow",
-    client: {
-      name: "Harbor House"
-    },
-    phase: "Scope Review",
-    status: "blocked",
-    waitingOn: "Decision",
-    progress: 39
-  },
-  {
-    id: 10,
-    name: "Services Page",
-    client: {
-      name: "Mosaic"
-    },
-    phase: "Design",
-    status: "active",
-    waitingOn: "Design Review",
-    progress: 47
-  },
-  {
-    id: 11,
-    name: "Launch Checklist",
-    client: {
-      name: "Cedar & Co."
-    },
-    phase: "Final QA",
-    status: "active",
-    waitingOn: "Final QA",
-    progress: 88
-  },
-  {
-    id: 12,
-    name: "About Page Refresh",
-    client: {
-      name: "Horizon"
-    },
-    phase: "Complete",
-    status: "complete",
-    waitingOn: "None",
-    progress: 100
-  }
-];
+import type { OverviewProject } from "@/lib/app-data";
 
 type Client = {
   avatar?: string;
   name: string;
 };
 
-type Project = {
-  id: number;
-  name?: string;
-  client?: Client;
-  phase?: string;
-  waitingOn?: string;
-  status: "active" | "blocked" | "complete" | "review" | "waiting";
-  progress?: number;
-};
+type Project = OverviewProject;
 
 const statusCopy: Record<Project["status"], string> = {
   active: "Active",
@@ -320,7 +178,7 @@ export const columns: ColumnDef<Project>[] = [
   }
 ];
 
-export function TableRecentProjects() {
+export function TableRecentProjects({ data }: { data: Project[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -171,19 +173,25 @@ export function OptionSelectControl({
 	value: string;
 	width?: string;
 }) {
+	const items = options.map((option) => ({ label: option, value: option }));
+
 	return (
-		<Select onValueChange={onChange} value={value}>
-			<SelectTrigger aria-label={label} className={width}>
-				<SelectValue>{value}</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				{options.map((option) => (
-					<SelectItem key={option} value={option}>
-						{option}
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+		<Field className={width}>
+			<Select items={items} onValueChange={(nextValue) => nextValue != null && onChange(nextValue)} value={value}>
+				<SelectTrigger aria-label={label} className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent alignItemWithTrigger={false}>
+					<SelectGroup>
+						{items.map((item) => (
+							<SelectItem key={item.value} value={item.value}>
+								{item.label}
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</Field>
 	);
 }
 

@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { categoryLabels, type Automation } from "./automations-data";
+import { automationIconMap } from "./automation-icons";
 import { statusClass, statusLabel } from "./automations-display";
 
 export function AutomationRow({
@@ -27,7 +28,7 @@ export function AutomationRow({
 	automation: Automation;
 	onSelect: (automation: Automation) => void;
 }) {
-	const Icon = automation.icon;
+	const Icon = automationIconMap[automation.icon];
 
 	return (
 		<div

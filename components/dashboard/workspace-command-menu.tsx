@@ -25,11 +25,9 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 
-import { projects } from "@/components/dashboard/projects/project-data";
-import { clients } from "@/components/dashboard/clients/client-data";
-import { templateSystems } from "@/components/dashboard/templates/templates-data";
 import { Button } from "@/components/ui/button";
 import {
+	Command,
 	CommandDialog,
 	CommandEmpty,
 	CommandGroup,
@@ -183,90 +181,43 @@ export function WorkspaceCommandMenu() {
 				title="Search Briefly"
 				onOpenChange={setOpen}
 			>
-				<CommandInput placeholder="Search projects, clients, actions..." />
-				<CommandList className="max-h-[420px]">
-					<CommandEmpty>No matching workspace items.</CommandEmpty>
-					<CommandGroup heading="Navigation">
-						{navigationItems.map((item) => (
-							<WorkspaceCommandItem
-								isMac={isMac}
-								item={item}
-								key={item.label}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading="Actions">
-						{actionItems.map((item) => (
-							<WorkspaceCommandItem
-								isMac={isMac}
-								item={item}
-								key={item.label}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading="Active Projects">
-						{projects.slice(0, 5).map((project) => (
-							<WorkspaceCommandItem
-								item={{
-									icon: SquareKanbanIcon,
-									label: project.name,
-									href: `/dashboard/projects/${project.slug}`,
-									keywords: `${project.client} ${project.status} ${project.phase} ${project.risk}`,
-								}}
-								isMac={isMac}
-								key={project.slug}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading="Clients">
-						{clients.slice(0, 5).map((client) => (
-							<WorkspaceCommandItem
-								item={{
-									icon: UsersIcon,
-									label: client.name,
-									href: `/dashboard/clients/${client.slug}`,
-									keywords: `${client.status} ${client.health} ${client.waitingOn}`,
-								}}
-								isMac={isMac}
-								key={client.slug}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading="Workflow Systems">
-						{templateSystems.slice(0, 4).map((template) => (
-							<WorkspaceCommandItem
-								item={{
-									icon: BriefcaseBusinessIcon,
-									label: template.name,
-									href: `/dashboard/templates/${template.slug}`,
-									keywords: `${template.typeLabel} ${template.summary} ${template.description}`,
-								}}
-								isMac={isMac}
-								key={template.slug}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading="Workspace">
-						{workspaceItems.map((item) => (
-							<WorkspaceCommandItem
-								isMac={isMac}
-								item={item}
-								key={item.label}
-								onSelect={runCommand}
-							/>
-						))}
-					</CommandGroup>
-				</CommandList>
+				<Command className="**:data-[selected=true]:bg-muted **:data-selected:bg-transparent">
+					<CommandInput placeholder="Search projects, clients, actions..." />
+					<CommandList className="max-h-[420px]">
+						<CommandEmpty>No matching workspace items.</CommandEmpty>
+						<CommandGroup heading="Navigation">
+							{navigationItems.map((item) => (
+								<WorkspaceCommandItem
+									isMac={isMac}
+									item={item}
+									key={item.label}
+									onSelect={runCommand}
+								/>
+							))}
+						</CommandGroup>
+						<CommandSeparator />
+						<CommandGroup heading="Actions">
+							{actionItems.map((item) => (
+								<WorkspaceCommandItem
+									isMac={isMac}
+									item={item}
+									key={item.label}
+									onSelect={runCommand}
+								/>
+							))}
+						</CommandGroup>
+						<CommandGroup heading="Workspace">
+							{workspaceItems.map((item) => (
+								<WorkspaceCommandItem
+									isMac={isMac}
+									item={item}
+									key={item.label}
+									onSelect={runCommand}
+								/>
+							))}
+						</CommandGroup>
+					</CommandList>
+				</Command>
 			</CommandDialog>
 		</>
 	);

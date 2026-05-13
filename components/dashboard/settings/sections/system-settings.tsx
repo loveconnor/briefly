@@ -192,18 +192,9 @@ export function DataSettings({ onDirty }: { onDirty: DirtyHandler }) {
 export function LogsSettings() {
 	return (
 		<SettingsSection title="Recent system events">
-			{[
-				["Domain verified", "portal.brieflystudio.com", "Today"],
-				["API token created", "Automation service", "Yesterday"],
-				["Billing settings updated", "Maya Chen", "May 8, 2026"],
-			].map(([title, value, time]) => (
-				<SettingRow
-					key={title}
-					title={title}
-					value={value}
-					status={<span className="text-xs text-muted-foreground">{time}</span>}
-				/>
-			))}
+			<p className="text-sm text-muted-foreground">
+				System events will appear here after audit logging records activity.
+			</p>
 		</SettingsSection>
 	);
 }
@@ -219,12 +210,9 @@ function SessionsDialog({ onClose, open }: { onClose: () => void; open: boolean 
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-3">
-					{["Connor Love - Chrome - New York", "Maya Chen - Safari - Toronto", "Automation service - API"].map((session) => (
-						<div className="flex items-center justify-between rounded-lg bg-muted/45 p-3 text-sm" key={session}>
-							<span>{session}</span>
-							<Button size="sm" variant="outline">Revoke</Button>
-						</div>
-					))}
+					<p className="rounded-lg bg-muted/45 p-3 text-sm text-muted-foreground">
+						Session records will appear here after session tracking records activity.
+					</p>
 				</div>
 				<DialogFooter>
 					<DialogClose render={<Button>Done</Button>} />
@@ -247,12 +235,9 @@ function ApiTokensDialog({ onClose, open }: { onClose: () => void; open: boolean
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4">
-					{["Automation service", "Reporting export"].map((token) => (
-						<div className="flex items-center justify-between rounded-lg bg-muted/45 p-3 text-sm" key={token}>
-							<span>{token}</span>
-							<Button size="sm" variant="outline">Revoke</Button>
-						</div>
-					))}
+					<p className="rounded-lg bg-muted/45 p-3 text-sm text-muted-foreground">
+						Tokens created in this workspace will appear here.
+					</p>
 					<label className="block space-y-2">
 						<span className="text-sm font-medium">New token name</span>
 						<Input

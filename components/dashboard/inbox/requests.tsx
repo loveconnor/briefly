@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -28,40 +29,16 @@ import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import type { InboxRequestItem } from "@/lib/app-data";
 
-const requestItems = [
-	{
-		title: "Acme requested homepage revisions",
-		from: "Jordan Ellis",
-		project: "Acme Website Redesign",
-		detail: "Can we make the proof section feel more enterprise and add one more customer quote?",
-		status: "Client",
-		assignedTo: "Maya Chen",
-		time: "24 min ago",
-	},
-	{
-		title: "Nova needs final logo exports",
-		from: "Ari Patel",
-		project: "Nova Brand Refresh",
-		detail: "Please upload SVG, PNG, and reversed logo exports before tomorrow's handoff.",
-		status: "Assets",
-		assignedTo: "Connor Love",
-		time: "1 hr ago",
-	},
-	{
-		title: "Brightside asked for CTA copy changes",
-		from: "Sam Rivera",
-		project: "Brightside Landing Page",
-		detail: "They want a less sales-heavy primary CTA before the page goes to QA.",
-		status: "Copy",
-		assignedTo: "Connor Love",
-		time: "Yesterday",
-	},
-];
-
-const statuses = [...new Set(requestItems.map((item) => item.status))];
-
-export function Requests() {
+export function Requests({
+	currentUserName,
+	requestItems,
+}: {
+	currentUserName: string;
+	requestItems: InboxRequestItem[];
+}) {
+	const statuses = useMemo(() => [...new Set(requestItems.map((item) => item.status))], [requestItems]);
 	const [query, setQuery] = useState("");
 	const [selectedStatuses, setSelectedStatuses] = useState(statuses);
 	const [conversationView, setConversationView] = useState("open");
@@ -80,18 +57,22 @@ export function Requests() {
 					.toLowerCase()
 					.includes(normalizedQuery);
 			const matchesStatus = selectedStatuses.includes(item.status);
+			const assignedToCurrentUser =
+				item.assignedTo === currentUserName || item.assignedTo === "Workspace owner";
 			const matchesView =
 				conversationView === "open" ||
-				(conversationView === "mine" && item.assignedTo === "Connor Love") ||
+				(conversationView === "mine" && assignedToCurrentUser) ||
 				(conversationView === "client" && item.status === "Client");
 
 			return matchesQuery && matchesStatus && matchesView;
 		});
-	}, [conversationView, query, selectedStatuses]);
+	}, [conversationView, currentUserName, query, requestItems, selectedStatuses]);
 
 	const clientRequestCount = visibleRequests.filter((item) => item.status === "Client").length;
 	const assetsNeededCount = visibleRequests.filter((item) => item.status === "Assets").length;
-	const assignedToMeCount = visibleRequests.filter((item) => item.assignedTo === "Connor Love").length;
+	const assignedToMeCount = visibleRequests.filter(
+		(item) => item.assignedTo === currentUserName || item.assignedTo === "Workspace owner"
+	).length;
 
 	return (
 		<div className="space-y-4">
@@ -119,6 +100,7 @@ export function Requests() {
 						onStatusChange={setSelectedStatuses}
 						query={query}
 						selectedStatuses={selectedStatuses}
+						statuses={statuses}
 					/>
 					<div className="divide-y divide-border/55 border-t border-border/60">
 						{visibleRequests.map((item) => {
@@ -141,7 +123,7 @@ export function Requests() {
 									</div>
 									<div className="mt-3 space-y-3">
 										<p className="text-sm leading-6">{item.detail}</p>
-										{replyOpen ? <Textarea placeholder="Reply to client" size="sm" /> : null}
+										{replyOpen ? <Textarea placeholder="Reply to client" /> : null}
 										<div className="flex flex-wrap items-center gap-1">
 											<TextAction
 												onClick={() =>
@@ -189,7 +171,7 @@ export function Requests() {
 					<div className="mt-4 divide-y divide-border/55 border-t border-border/60">
 						<QueueMetric label="Client requests" value={String(clientRequestCount)} variant="info" />
 						<QueueMetric label="Assets needed" value={String(assetsNeededCount)} variant="warning" />
-						<QueueMetric label="Assigned to me" value={String(assignedToMeCount)} variant="outline" />
+						<QueueMetric label="Assigned to me" value={String(assignedToMeCount)} variant="default" />
 					</div>
 				</aside>
 			</div>
@@ -220,11 +202,13 @@ function RequestToolbar({
 	onStatusChange,
 	query,
 	selectedStatuses,
+	statuses,
 }: {
 	onQueryChange: (value: string) => void;
 	onStatusChange: (items: string[]) => void;
 	query: string;
 	selectedStatuses: string[];
+	statuses: string[];
 }) {
 	const toggleStatus = (status: string, checked: boolean) => {
 		onStatusChange(
@@ -320,12 +304,14 @@ function QueueMetric({
 }: {
 	label: string;
 	value: string;
-	variant: "info" | "outline" | "warning";
+	variant: Extract<BadgeTone, "default" | "info" | "warning">;
 }) {
 	return (
 		<div className="flex items-center justify-between py-3">
 			<span className="text-sm font-medium">{label}</span>
-			<Badge variant={variant}>{value}</Badge>
+			<Badge className={badgeToneClassName(variant)} variant={badgeToneVariant(variant)}>
+				{value}
+			</Badge>
 		</div>
 	);
 }

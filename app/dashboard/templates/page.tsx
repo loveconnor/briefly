@@ -6,6 +6,7 @@ import { TemplatesPage } from "@/components/dashboard/templates/templates-page";
 import type { TemplateCategory } from "@/components/dashboard/templates/templates-data";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getTemplates } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -48,6 +49,7 @@ export default async function Page({
 	const initialCategory = categories.has(category ?? "")
 		? (category as TemplateCategory)
 		: "all";
+	const templates = await getTemplates(session.user.id);
 
 	return (
 		<AppShell
@@ -57,7 +59,7 @@ export default async function Page({
 				image: session.user.image,
 			}}
 		>
-			<TemplatesPage initialCategory={initialCategory} />
+			<TemplatesPage initialCategory={initialCategory} templates={templates} />
 		</AppShell>
 	);
 }

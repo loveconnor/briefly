@@ -4,6 +4,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { ClientsBoard } from "@/components/dashboard/clients/clients-board";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getClients } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export default async function ClientsPage() {
 		return <OnboardingFlow />;
 	}
 
+	const clients = await getClients(session.user);
+
 	return (
 		<AppShell
 			user={{
@@ -45,7 +48,7 @@ export default async function ClientsPage() {
 					Relationship operations across active work, blockers, response state, upcoming delivery, and client portal visibility.
 				</p>
 			</div>
-			<ClientsBoard />
+			<ClientsBoard clients={clients} />
 		</AppShell>
 	);
 }

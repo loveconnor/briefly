@@ -1,6 +1,25 @@
-import { activityFeed } from "./analytics-data";
+import {
+	CheckIcon,
+	DownloadIcon,
+	EyeIcon,
+	MessageSquareTextIcon,
+	UploadIcon,
+} from "lucide-react";
+import type { AnalyticsData } from "./analytics-data";
 
-export function LiveActivityFeed() {
+const iconMap = {
+	approval: CheckIcon,
+	comment: MessageSquareTextIcon,
+	download: DownloadIcon,
+	open: EyeIcon,
+	upload: UploadIcon,
+};
+
+export function LiveActivityFeed({
+	activityFeed,
+}: {
+	activityFeed: AnalyticsData["activityFeed"];
+}) {
 	return (
 		<aside className="min-w-0">
 			<div className="mb-4 flex items-center justify-between">
@@ -12,7 +31,7 @@ export function LiveActivityFeed() {
 			</div>
 			<div className="divide-y">
 				{activityFeed.map((activity) => {
-					const Icon = activity.icon;
+					const Icon = iconMap[activity.icon];
 					return (
 						<div className="flex items-start gap-3 py-3" key={`${activity.person}-${activity.time}`}>
 							<div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border text-muted-foreground">
@@ -28,6 +47,9 @@ export function LiveActivityFeed() {
 						</div>
 					);
 				})}
+				{activityFeed.length === 0 ? (
+					<p className="py-3 text-sm text-muted-foreground">No client signals recorded yet.</p>
+				) : null}
 			</div>
 		</aside>
 	);

@@ -3,9 +3,11 @@
 import { FileDownIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -19,6 +21,25 @@ type AnalyticsHeaderProps = {
 	project: string;
 	range: string;
 };
+
+const rangeItems = [
+	{ label: "Last 7 days", value: "7d" },
+	{ label: "Last 30 days", value: "30d" },
+	{ label: "Last 90 days", value: "90d" },
+];
+
+const projectItems = [
+	{ label: "All projects", value: "all" },
+	{ label: "Website projects", value: "website" },
+	{ label: "Brand portals", value: "brand" },
+	{ label: "Launch work", value: "launch" },
+];
+
+const compareItems = [
+	{ label: "Compare previous", value: "previous" },
+	{ label: "No comparison", value: "none" },
+	{ label: "Same period last month", value: "month" },
+];
 
 export function AnalyticsHeader({
 	compare,
@@ -37,37 +58,54 @@ export function AnalyticsHeader({
 				</p>
 			</div>
 			<div className="flex flex-wrap items-center gap-2">
-				<Select onValueChange={onRangeChange} value={range}>
-					<SelectTrigger aria-label="Date range" className="h-8 w-32">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="7d">Last 7 days</SelectItem>
-						<SelectItem value="30d">Last 30 days</SelectItem>
-						<SelectItem value="90d">Last 90 days</SelectItem>
-					</SelectContent>
-				</Select>
-				<Select onValueChange={onProjectChange} value={project}>
-					<SelectTrigger aria-label="Project filter" className="h-8 w-40">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All projects</SelectItem>
-						<SelectItem value="website">Website projects</SelectItem>
-						<SelectItem value="brand">Brand portals</SelectItem>
-						<SelectItem value="launch">Launch work</SelectItem>
-					</SelectContent>
-				</Select>
-				<Select onValueChange={onCompareChange} value={compare}>
-					<SelectTrigger aria-label="Compare period" className="h-8 w-40">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="previous">Compare previous</SelectItem>
-						<SelectItem value="none">No comparison</SelectItem>
-						<SelectItem value="month">Same period last month</SelectItem>
-					</SelectContent>
-				</Select>
+				<Field className="w-32">
+					<Select items={rangeItems} onValueChange={(value) => value != null && onRangeChange(value)} value={range}>
+						<SelectTrigger aria-label="Date range" className="h-8 w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent alignItemWithTrigger={false}>
+							<SelectGroup>
+								{rangeItems.map((item) => (
+									<SelectItem key={item.value} value={item.value}>
+										{item.label}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</Field>
+				<Field className="w-40">
+					<Select items={projectItems} onValueChange={(value) => value != null && onProjectChange(value)} value={project}>
+						<SelectTrigger aria-label="Project filter" className="h-8 w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent alignItemWithTrigger={false}>
+							<SelectGroup>
+								{projectItems.map((item) => (
+									<SelectItem key={item.value} value={item.value}>
+										{item.label}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</Field>
+				<Field className="w-40">
+					<Select items={compareItems} onValueChange={(value) => value != null && onCompareChange(value)} value={compare}>
+						<SelectTrigger aria-label="Compare period" className="h-8 w-full">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent alignItemWithTrigger={false}>
+							<SelectGroup>
+								{compareItems.map((item) => (
+									<SelectItem key={item.value} value={item.value}>
+										{item.label}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</Field>
 				<Button className="h-8" size="sm" variant="outline">
 					<FileDownIcon />
 					Export

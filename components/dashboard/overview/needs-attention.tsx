@@ -1,41 +1,31 @@
 import { AlertTriangle, CalendarClock, FolderOpenDot, MessageCircleWarning } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
+import type { OverviewAttentionItem } from "@/lib/app-data";
 
-const items = [
-  {
-    icon: AlertTriangle,
-    title: "Waiting for Acme approval",
-    detail: "Homepage design has been idle for 3 days.",
-    label: "Overdue",
-    variant: "error" as const
-  },
-  {
-    icon: FolderOpenDot,
-    title: "Missing assets from Nova",
-    detail: "Product photography is blocking the services page.",
-    label: "Blocked",
-    variant: "warning" as const
-  },
-  {
-    icon: CalendarClock,
-    title: "Launch scheduled tomorrow",
-    detail: "Final QA needs sign-off before 3 PM.",
-    label: "Due soon",
-    variant: "info" as const
-  },
-  {
-    icon: MessageCircleWarning,
-    title: "Brightside feedback pending",
-    detail: "Copy review comments have not been resolved.",
-    label: "Client",
-    variant: "outline" as const
+const iconMap = {
+  alert: AlertTriangle,
+  calendar: CalendarClock,
+  folder: FolderOpenDot,
+  message: MessageCircleWarning,
+};
+
+export function NeedsAttention({ items }: { items: OverviewAttentionItem[] }) {
+  if (items.length === 0) {
+    return (
+      <section className="h-full">
+        <div className="mb-4">
+          <h2 className="font-display text-lg font-medium tracking-tight">Needs Attention</h2>
+          <p className="text-muted-foreground mt-1 text-sm">Items most likely to slow delivery.</p>
+        </div>
+        <p className="text-sm text-muted-foreground">No blockers or pending decisions recorded.</p>
+      </section>
+    );
   }
-];
 
-export function NeedsAttention() {
   const [primary, ...secondary] = items;
-  const PrimaryIcon = primary.icon;
+  const PrimaryIcon = iconMap[primary.icon];
 
   return (
     <section className="h-full">
@@ -52,13 +42,18 @@ export function NeedsAttention() {
               </div>
               <p className="font-medium leading-5">{primary.title}</p>
             </div>
-            <Badge variant={primary.variant}>{primary.label}</Badge>
+            <Badge
+              className={badgeToneClassName(primary.variant as BadgeTone)}
+              variant={badgeToneVariant(primary.variant as BadgeTone)}
+            >
+              {primary.label}
+            </Badge>
           </div>
           <p className="text-muted-foreground text-sm">{primary.detail}</p>
         </div>
         <div className="space-y-5">
           {secondary.map((item) => {
-            const Icon = item.icon;
+            const Icon = iconMap[item.icon];
 
             return (
               <div key={item.title} className="flex items-start gap-3">

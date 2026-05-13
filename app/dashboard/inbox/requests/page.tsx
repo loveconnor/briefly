@@ -5,6 +5,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { Requests } from "@/components/dashboard/inbox/requests";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getInboxData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export default async function Page() {
 		return <OnboardingFlow />;
 	}
 
+	const inbox = await getInboxData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -39,7 +42,7 @@ export default async function Page() {
 				image: session.user.image,
 			}}
 		>
-			<Requests />
+			<Requests currentUserName={session.user.name ?? session.user.email} requestItems={inbox.requests} />
 		</AppShell>
 	);
 }

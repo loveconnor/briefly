@@ -11,6 +11,7 @@ import {
 } from "@/components/dashboard/workspace/workspace-sections";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getWorkspaceData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -56,6 +57,8 @@ export default async function DashboardWorkspacePage({
 		return <OnboardingFlow />;
 	}
 
+	const workspace = await getWorkspaceData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -64,7 +67,7 @@ export default async function DashboardWorkspacePage({
 				image: session.user.image,
 			}}
 		>
-			<WorkspacePage section={section as WorkspaceSection} />
+			<WorkspacePage data={workspace} section={section as WorkspaceSection} />
 		</AppShell>
 	);
 }

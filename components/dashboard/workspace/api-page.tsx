@@ -19,7 +19,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { apiKeys, webhooks, type Webhook } from "./workspace-data";
+import type { Webhook, WorkspaceData } from "./workspace-data";
 import { StatusText } from "./workspace-primitives";
 
 type ApiKey = {
@@ -31,12 +31,6 @@ type ApiKey = {
 	secret: string;
 };
 
-const initialKeys: ApiKey[] = apiKeys.map((key, index) => ({
-	...key,
-	id: key.name.toLowerCase().replaceAll(" ", "-"),
-	secret: `brf_${index === 0 ? "live" : "test"}_${["a8Kp93Ls", "z4Lm82Qx"][index]}`,
-}));
-
 function keySuffix(seed: number) {
 	return `${["a8Kp", "z4Lm", "q9Nt"][seed % 3] ?? "n6Qr"}${Math.random()
 		.toString(36)
@@ -44,11 +38,15 @@ function keySuffix(seed: number) {
 }
 
 export function ApiPage({
+	apiKeys,
 	onOpenWebhook,
+	webhooks,
 }: {
+	apiKeys: WorkspaceData["apiKeys"];
 	onOpenWebhook: (webhook: Webhook) => void;
+	webhooks: Webhook[];
 }) {
-	const [keys, setKeys] = useState<ApiKey[]>(initialKeys);
+	const [keys, setKeys] = useState<ApiKey[]>(apiKeys);
 	const [revealedKeys, setRevealedKeys] = useState<Record<string, boolean>>({});
 	const [webhookRows, setWebhookRows] = useState<Webhook[]>(webhooks);
 	const [isEndpointDialogOpen, setIsEndpointDialogOpen] = useState(false);
@@ -181,6 +179,9 @@ export function ApiPage({
 							</div>
 						);
 					})}
+					{keys.length === 0 ? (
+						<div className="py-5 text-sm text-muted-foreground">No API keys created yet.</div>
+					) : null}
 				</div>
 			</section>
 			<section>
@@ -210,6 +211,9 @@ export function ApiPage({
 							<ExternalLinkIcon className="size-4 text-muted-foreground" />
 						</button>
 					))}
+					{webhookRows.length === 0 ? (
+						<div className="py-5 text-sm text-muted-foreground">No webhook endpoints configured.</div>
+					) : null}
 				</div>
 				<div className="mt-6 flex items-start gap-3 text-sm text-muted-foreground">
 					<CheckIcon className="mt-0.5 size-4 text-success-foreground" />
@@ -245,7 +249,7 @@ export function ApiPage({
 							<Input
 								aria-label="Webhook endpoint URL"
 								onChange={(event) => setNewEndpoint(event.target.value)}
-								placeholder="https://acme.com/webhooks"
+								placeholder="https://example.com/webhooks"
 								value={newEndpoint}
 							/>
 						</label>

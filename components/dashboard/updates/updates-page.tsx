@@ -4,18 +4,27 @@ import { useMemo, useState } from "react";
 
 import { UpdateDetailSheet } from "@/components/dashboard/updates/update-detail-sheet";
 import { UpdateStream } from "@/components/dashboard/updates/update-stream";
-import { updateGroups, updateProjects, updateRanges, updateStates, updates, updateTypes } from "@/components/dashboard/updates/updates-data";
+import { updateGroups, updateRanges, updateStates } from "@/components/dashboard/updates/updates-data";
 import { UpdatesEmptyState } from "@/components/dashboard/updates/updates-empty-state";
 import { UpdatesHeader } from "@/components/dashboard/updates/updates-header";
 import { UpdatesToolbar } from "@/components/dashboard/updates/updates-toolbar";
+import type { ClientUpdate, UpdateType } from "@/components/dashboard/updates/types";
 
-export function UpdatesPage() {
+export function UpdatesPage({ updates }: { updates: ClientUpdate[] }) {
 	const [query, setQuery] = useState("");
 	const [project, setProject] = useState("All projects");
 	const [type, setType] = useState("All types");
 	const [state, setState] = useState("Sent");
 	const [range, setRange] = useState("This month");
 	const [selectedUpdateId, setSelectedUpdateId] = useState<string | null>(null);
+	const updateProjects = useMemo(
+		() => ["All projects", ...Array.from(new Set(updates.map((update) => update.project)))],
+		[updates],
+	);
+	const updateTypes = useMemo<Array<"All types" | UpdateType>>(
+		() => ["All types", ...Array.from(new Set(updates.map((update) => update.type)))],
+		[updates],
+	);
 
 	const filteredUpdates = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -53,7 +62,7 @@ export function UpdatesPage() {
 
 	return (
 		<div className="space-y-6">
-			<UpdatesHeader />
+			<UpdatesHeader projects={updateProjects.slice(1)} />
 			<UpdatesToolbar
 				onProjectChange={setProject}
 				onQueryChange={setQuery}
@@ -87,7 +96,7 @@ export function UpdatesPage() {
 					/>
 				</>
 			) : (
-				<UpdatesEmptyState />
+				<UpdatesEmptyState projects={updateProjects.slice(1)} />
 			)}
 		</div>
 	);

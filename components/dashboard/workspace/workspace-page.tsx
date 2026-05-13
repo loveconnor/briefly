@@ -9,7 +9,7 @@ import { BrandingPage } from "./branding-page";
 import { DomainsPage } from "./domains-page";
 import { IntegrationsPage } from "./integrations-page";
 import { NotificationsPage } from "./notifications-page";
-import { pageCopy, type Domain } from "./workspace-data";
+import { pageCopy, type Domain, type WorkspaceData } from "./workspace-data";
 import type { WorkspaceSection } from "./workspace-sections";
 import {
 	DomainSheet,
@@ -27,8 +27,14 @@ type SheetState =
 	| { type: "webhook"; event: string; endpoint: string }
 	| null;
 
-export function WorkspacePage({ section }: { section: WorkspaceSection }) {
-	const [accentColor, setAccentColor] = useState("#7A5AF8");
+export function WorkspacePage({
+	data,
+	section,
+}: {
+	data: WorkspaceData;
+	section: WorkspaceSection;
+}) {
+	const [accentColor, setAccentColor] = useState(data.brandColor);
 	const [sheet, setSheet] = useState<SheetState>(null);
 	const copy = pageCopy[section];
 
@@ -63,11 +69,13 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
 			{section === "branding" ? (
 				<BrandingPage
 					accentColor={accentColor}
+					data={data}
 					onAccentColorChange={setAccentColor}
 				/>
 			) : null}
 			{section === "domains" ? (
 				<DomainsPage
+					domains={data.domains}
 					onAddDomain={() => setSheet({ type: "domain" })}
 					onManageDomain={(domain) =>
 						setSheet({
@@ -79,6 +87,7 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
 			) : null}
 			{section === "integrations" ? (
 				<IntegrationsPage
+					integrationGroups={data.integrationGroups}
 					onOpen={(integration) =>
 						setSheet({
 							type: "integration",
@@ -89,9 +98,10 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
 					}
 				/>
 			) : null}
-			{section === "notifications" ? <NotificationsPage /> : null}
+			{section === "notifications" ? <NotificationsPage notificationRows={data.notificationRows} /> : null}
 			{section === "api" ? (
 				<ApiPage
+					apiKeys={data.apiKeys}
 					onOpenWebhook={(webhook) =>
 						setSheet({
 							type: "webhook",
@@ -99,6 +109,7 @@ export function WorkspacePage({ section }: { section: WorkspaceSection }) {
 							endpoint: webhook.endpoint,
 						})
 					}
+					webhooks={data.webhooks}
 				/>
 			) : null}
 

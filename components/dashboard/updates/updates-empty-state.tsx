@@ -1,6 +1,6 @@
 import { UpdateComposer } from "@/components/dashboard/updates/update-composer";
 
-export function UpdatesEmptyState() {
+export function UpdatesEmptyState({ projects = [] }: { projects?: string[] }) {
 	return (
 		<div className="flex min-h-[420px] flex-col items-center justify-center border-t border-border/70 text-center">
 			<h2 className="text-lg font-semibold">No updates yet</h2>
@@ -8,7 +8,7 @@ export function UpdatesEmptyState() {
 				Project updates, approvals, launches, and follow-ups will appear here once communication begins.
 			</p>
 			<div className="mt-5">
-				<UpdateComposer />
+				<UpdateComposer projects={projects} />
 			</div>
 		</div>
 	);

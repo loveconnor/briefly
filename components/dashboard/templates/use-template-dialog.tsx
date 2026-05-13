@@ -14,10 +14,10 @@ import { Input } from "@/components/ui/input";
 
 export function UseTemplateDialog() {
 	const fields = [
-		{ label: "Project name", placeholder: "Acme website redesign" },
-		{ label: "Client", placeholder: "Acme Co." },
-		{ label: "Start date", placeholder: "May 20, 2026" },
-		{ label: "Team", placeholder: "Connor, Maya, Dev lead" },
+		{ label: "Project name", placeholder: "Website redesign" },
+		{ label: "Client", placeholder: "Client name" },
+		{ label: "Start date", placeholder: "Start date" },
+		{ label: "Team", placeholder: "Owner, reviewer, developer" },
 	];
 
 	return (

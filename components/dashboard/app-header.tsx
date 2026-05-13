@@ -32,36 +32,7 @@ type HeaderNotification = {
 	unread?: boolean;
 };
 
-const headerNotifications: HeaderNotification[] = [
-	{
-		title: "Acme approval is overdue",
-		desc: "Creative proofs have been waiting for client review.",
-		date: "12 min ago",
-		unread: true,
-	},
-	{
-		title: "Maya Chen commented",
-		desc: "Left feedback on the Q2 launch portal.",
-		date: "38 min ago",
-		unread: true,
-	},
-	{
-		title: "Workspace invite pending",
-		desc: "Jordan Lee is requesting access to Briefly Ops.",
-		date: "1 hr ago",
-		type: "confirm",
-	},
-	{
-		title: "Invoice reminder sent",
-		desc: "Retainer renewal notice was delivered to Northstar.",
-		date: "Yesterday",
-	},
-	{
-		title: "Portal files synced",
-		desc: "Six files were added to the client delivery folder.",
-		date: "Yesterday",
-	},
-];
+const headerNotifications: HeaderNotification[] = [];
 
 function NotificationsMenu() {
 	const isMobile = useIsMobile();
@@ -78,7 +49,9 @@ function NotificationsMenu() {
 						variant="ghost"
 					>
 						<BellIcon />
-						<span className="absolute end-0.5 top-0.5 block size-1.5 shrink-0 rounded-full bg-destructive" />
+						{headerNotifications.some((item) => item.unread) ? (
+							<span className="absolute end-0.5 top-0.5 block size-1.5 shrink-0 rounded-full bg-destructive" />
+						) : null}
 					</Button>
 				}
 			/>
@@ -142,6 +115,11 @@ function NotificationsMenu() {
 							) : null}
 						</DropdownMenuItem>
 					))}
+					{headerNotifications.length === 0 ? (
+						<div className="px-4 py-6 text-sm text-muted-foreground">
+							No notifications recorded.
+						</div>
+					) : null}
 				</ScrollArea>
 			</DropdownMenuContent>
 		</DropdownMenu>

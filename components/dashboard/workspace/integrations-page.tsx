@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "./brand-logo";
-import { integrationGroups, type Integration } from "./workspace-data";
+import type { Integration, WorkspaceData } from "./workspace-data";
 import { StatusText } from "./workspace-primitives";
 
 export function IntegrationsPage({
+	integrationGroups,
 	onOpen,
 }: {
+	integrationGroups: WorkspaceData["integrationGroups"];
 	onOpen: (integration: Integration) => void;
 }) {
 	return (
@@ -19,6 +21,9 @@ export function IntegrationsPage({
 						.map((item) => (
 							<IntegrationRow item={item} key={item.name} onOpen={onOpen} />
 						))}
+					{integrationGroups.flatMap((group) => group.items).filter((item) => item.status === "Connected").length === 0 ? (
+						<div className="py-6 text-sm text-muted-foreground">No connected integrations yet.</div>
+					) : null}
 				</div>
 			</section>
 			{integrationGroups.map((group) => (

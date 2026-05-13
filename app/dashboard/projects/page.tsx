@@ -2,10 +2,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/dashboard/app-shell";
-import { projects } from "@/components/dashboard/projects/project-data";
 import { ProjectsList } from "@/components/dashboard/projects/projects-list";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getProjects } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +31,8 @@ export default async function ProjectsPage() {
 	if (!onboarding.completed) {
 		return <OnboardingFlow />;
 	}
+
+	const projects = await getProjects(session.user);
 
 	return (
 		<AppShell

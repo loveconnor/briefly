@@ -1,6 +1,6 @@
 import { UpdateComposer } from "@/components/dashboard/updates/update-composer";
 
-export function UpdatesHeader() {
+export function UpdatesHeader({ projects = [] }: { projects?: string[] }) {
 	return (
 		<header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 			<div>
@@ -9,7 +9,7 @@ export function UpdatesHeader() {
 					Project communication, approvals, launches, and client visibility.
 				</p>
 			</div>
-			<UpdateComposer />
+			<UpdateComposer projects={projects} />
 		</header>
 	);
 }

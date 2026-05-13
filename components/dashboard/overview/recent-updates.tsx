@@ -1,29 +1,14 @@
 import { CheckCircle2, Link2, Send, Share2 } from "lucide-react";
+import type { OverviewUpdate } from "@/lib/app-data";
 
-const updates = [
-  {
-    icon: Send,
-    title: "Weekly update sent to Acme",
-    detail: "Included progress, open approvals, and Friday targets."
-  },
-  {
-    icon: Share2,
-    title: "Portal shared with Nova",
-    detail: "Client now has access to brand files and next steps."
-  },
-  {
-    icon: CheckCircle2,
-    title: "Homepage approved",
-    detail: "Approval recorded and build phase opened."
-  },
-  {
-    icon: Link2,
-    title: "Preview link refreshed",
-    detail: "Brightside received the latest landing page revision."
-  }
-];
+const iconMap = {
+  approval: CheckCircle2,
+  link: Link2,
+  send: Send,
+  share: Share2,
+};
 
-export function RecentUpdates() {
+export function RecentUpdates({ updates }: { updates: OverviewUpdate[] }) {
   return (
     <section>
       <div className="mb-4">
@@ -32,7 +17,7 @@ export function RecentUpdates() {
       </div>
       <div className="space-y-5">
         {updates.map((update) => {
-          const Icon = update.icon;
+          const Icon = iconMap[update.icon];
 
           return (
             <div key={update.title} className="flex gap-4">
@@ -46,6 +31,9 @@ export function RecentUpdates() {
             </div>
           );
         })}
+        {updates.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No client updates sent yet.</p>
+        ) : null}
       </div>
     </section>
   );

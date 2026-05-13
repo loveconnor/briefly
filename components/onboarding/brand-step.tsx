@@ -47,10 +47,9 @@ export function BrandStep({
             id="business-name"
             value={businessName}
             onChange={(event) => onBusinessNameChange(event.target.value)}
-            placeholder="Acme Studio"
+            placeholder="Your studio"
             autoComplete="organization"
             maxLength={32}
-            size="lg"
           />
         </div>
 

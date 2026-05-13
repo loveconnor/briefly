@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Clock3Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
 	Popover,
@@ -12,12 +13,13 @@ import {
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { notificationRows } from "./workspace-data";
+import type { WorkspaceData } from "./workspace-data";
 import {
 	SettingRow,
 	SettingsSection,
@@ -37,6 +39,16 @@ const deliveryLabels: Record<string, string> = {
 	"digest-only": "Digest only",
 };
 
+const digestItems = Object.entries(digestLabels).map(([value, label]) => ({
+	label,
+	value,
+}));
+
+const deliveryItems = Object.entries(deliveryLabels).map(([value, label]) => ({
+	label,
+	value,
+}));
+
 function formatTime(value: string) {
 	const [hours = "0", minutes = "00"] = value.split(":");
 	const hourNumber = Number(hours);
@@ -46,7 +58,11 @@ function formatTime(value: string) {
 	return `${String(displayHour).padStart(2, "0")}:${minutes} ${period}`;
 }
 
-export function NotificationsPage() {
+export function NotificationsPage({
+	notificationRows,
+}: {
+	notificationRows: WorkspaceData["notificationRows"];
+}) {
 	const [quietStart, setQuietStart] = useState("18:00");
 	const [quietEnd, setQuietEnd] = useState("08:00");
 	const [digestFrequency, setDigestFrequency] = useState("daily-9");
@@ -84,6 +100,9 @@ export function NotificationsPage() {
 							<Switch defaultChecked={row.app} />
 						</div>
 					))}
+					{notificationRows.length === 0 ? (
+						<div className="border-t py-4 text-sm text-muted-foreground">No notification rules configured.</div>
+					) : null}
 				</div>
 			</section>
 			<SettingsSection
@@ -131,37 +150,52 @@ export function NotificationsPage() {
 				/>
 				<SettingRow
 					action={
-						<Select
-							onValueChange={setDigestFrequency}
-							value={digestFrequency}
-						>
-							<SelectTrigger className="w-72">
-								<SelectValue>{digestLabels[digestFrequency]}</SelectValue>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="daily-9">Daily at 9:00 AM</SelectItem>
-								<SelectItem value="daily-4">Daily at 4:00 PM</SelectItem>
-								<SelectItem value="weekly-mon">Weekly on Monday</SelectItem>
-								<SelectItem value="off">Off</SelectItem>
-							</SelectContent>
-						</Select>
+						<Field className="w-72">
+							<Select
+								items={digestItems}
+								onValueChange={(value) => value != null && setDigestFrequency(value)}
+								value={digestFrequency}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent alignItemWithTrigger={false}>
+									<SelectGroup>
+										{digestItems.map((item) => (
+											<SelectItem key={item.value} value={item.value}>
+												{item.label}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</Field>
 					}
 					description="A digest of lower-priority updates across clients."
 					label="Notification digest frequency"
 				/>
 				<SettingRow
 					action={
-						<Select onValueChange={setDeliveryMode} value={deliveryMode}>
-							<SelectTrigger className="w-72">
-								<SelectValue>{deliveryLabels[deliveryMode]}</SelectValue>
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="approvals-instant">Approvals instant</SelectItem>
-								<SelectItem value="all-instant">All important instant</SelectItem>
-								<SelectItem value="batched">Batch non-critical</SelectItem>
-								<SelectItem value="digest-only">Digest only</SelectItem>
-							</SelectContent>
-						</Select>
+						<Field className="w-72">
+							<Select
+								items={deliveryItems}
+								onValueChange={(value) => value != null && setDeliveryMode(value)}
+								value={deliveryMode}
+							>
+								<SelectTrigger className="w-full">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent alignItemWithTrigger={false}>
+									<SelectGroup>
+										{deliveryItems.map((item) => (
+											<SelectItem key={item.value} value={item.value}>
+												{item.label}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</Field>
 					}
 					description="Approval requests bypass batching so work does not stall."
 					label="Instant vs batched delivery"

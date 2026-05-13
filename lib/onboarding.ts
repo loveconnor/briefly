@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { syncOnboardingToAppData } from "@/lib/app-data"
 
 export type WorkType =
   | "web-dev"
@@ -204,6 +205,8 @@ export async function saveOnboarding(userId: string, payload: OnboardingPayload)
       ],
     )
   }
+
+  await syncOnboardingToAppData(userId)
 }
 
 function cleanString(value: string | null | undefined) {

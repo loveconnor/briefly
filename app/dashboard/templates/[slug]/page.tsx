@@ -3,17 +3,11 @@ import { notFound, redirect } from "next/navigation";
 
 import { AppShell } from "@/components/dashboard/app-shell";
 import { TemplateDetailPage } from "@/components/dashboard/templates/template-detail-page";
-import { getTemplateBySlug, templateSystems } from "@/components/dashboard/templates/templates-data";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getTemplateBySlug } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
-
-export async function generateStaticParams() {
-	return templateSystems.map((template) => ({
-		slug: template.slug,
-	}));
-}
 
 export async function generateMetadata({
 	params,
@@ -21,20 +15,11 @@ export async function generateMetadata({
 	params: Promise<{ slug: string }>;
 }) {
 	const { slug } = await params;
-	const template = getTemplateBySlug(slug);
-
-	if (!template) {
-		return generateMeta({
-			title: "Template",
-			description: "Reusable project system.",
-			canonical: "/dashboard/templates",
-		});
-	}
 
 	return generateMeta({
-		title: template.name,
-		description: template.description,
-		canonical: `/dashboard/templates/${template.slug}`,
+		title: "Template",
+		description: "Reusable project system.",
+		canonical: `/dashboard/templates/${slug}`,
 	});
 }
 
@@ -58,7 +43,7 @@ export default async function Page({
 	}
 
 	const { slug } = await params;
-	const template = getTemplateBySlug(slug);
+	const template = await getTemplateBySlug(session.user.id, slug);
 
 	if (!template) {
 		notFound();

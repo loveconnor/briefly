@@ -1,33 +1,7 @@
 import { CalendarDays } from "lucide-react";
+import type { OverviewDeliverable } from "@/lib/app-data";
 
-const deliverables = [
-  {
-    title: "Homepage Design Review",
-    client: "Acme Studio",
-    due: "Tomorrow",
-    status: "Review"
-  },
-  {
-    title: "Website Launch",
-    client: "Northstar Labs",
-    due: "Friday",
-    status: "QA"
-  },
-  {
-    title: "SEO Audit Delivery",
-    client: "Brightside",
-    due: "Monday",
-    status: "Draft"
-  },
-  {
-    title: "Brand Asset Handoff",
-    client: "Nova Collective",
-    due: "May 15",
-    status: "Packaging"
-  }
-];
-
-export function UpcomingDeliverables() {
+export function UpcomingDeliverables({ deliverables }: { deliverables: OverviewDeliverable[] }) {
   return (
     <section>
       <div className="mb-4">
@@ -48,6 +22,9 @@ export function UpcomingDeliverables() {
             <span className="text-muted-foreground col-start-2 text-sm sm:col-start-auto">{deliverable.status}</span>
           </div>
         ))}
+        {deliverables.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No deliverables scheduled yet.</p>
+        ) : null}
       </div>
     </section>
   );

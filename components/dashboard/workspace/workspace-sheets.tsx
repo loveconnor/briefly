@@ -53,7 +53,7 @@ export function DomainSheet() {
 							setDomain(event.target.value);
 							setIsChecking(false);
 						}}
-						placeholder="portal.acme.com"
+						placeholder="portal.yourdomain.com"
 						value={domain}
 					/>
 				</SheetStep>
@@ -183,7 +183,7 @@ export function ManageDomainSheet({
 				<Button onClick={() => setIsChecking(true)}>
 					<RefreshCwIcon /> Recheck domain
 				</Button>
-				<Button variant="destructive-outline">
+				<Button variant="destructive">
 					<Trash2Icon /> Remove domain
 				</Button>
 			</SheetFooter>
@@ -249,7 +249,7 @@ export function IntegrationSheet({
 			<SheetFooter className="border-t p-6">
 				<Button>{connected ? "Save changes" : "Connect"}</Button>
 				{connected ? (
-					<Button variant="destructive-outline">
+					<Button variant="destructive">
 						<Trash2Icon /> Disconnect
 					</Button>
 				) : null}

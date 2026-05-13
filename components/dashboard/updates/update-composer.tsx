@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { PaperclipIcon, PlusIcon, SendIcon } from "lucide-react";
+import { PlusIcon, SendIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -22,10 +24,13 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import { updateProjects } from "@/components/dashboard/updates/updates-data";
 
-export function UpdateComposer() {
+export function UpdateComposer({ projects = [] }: { projects?: string[] }) {
 	const [open, setOpen] = useState(false);
+	const projectItems = projects.map((projectName) => ({
+		label: projectName,
+		value: projectName,
+	}));
 
 	return (
 		<Sheet onOpenChange={setOpen} open={open}>
@@ -42,44 +47,34 @@ export function UpdateComposer() {
 				</SheetHeader>
 				<div className="space-y-5 p-6">
 					<ComposerField label="Update title">
-						<Input defaultValue="Homepage review ready" />
+						<Input />
 					</ComposerField>
 					<ComposerField label="Project">
-						<Select defaultValue="Acme Website Redesign">
-							<SelectTrigger aria-label="Project">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{updateProjects.slice(1).map((projectName) => (
-									<SelectItem key={projectName} value={projectName}>
-										{projectName}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<Field>
+							<Select items={projectItems}>
+								<SelectTrigger aria-label="Project">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent alignItemWithTrigger={false}>
+									<SelectGroup>
+										{projectItems.map((item) => (
+											<SelectItem key={item.value} value={item.value}>
+												{item.label}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</Field>
 					</ComposerField>
 					<ComposerField label="Recipients">
-						<Input defaultValue="Dana Ellis, Marcus Chen" />
+						<Input />
 					</ComposerField>
 					<ComposerField label="Message">
-						<Textarea
-							className="[&_[data-slot=textarea]]:min-h-40"
-							defaultValue={
-								"The homepage and services layouts are ready for review.\n\nPlease focus on:\n- hero messaging\n- mobile navigation\n- CTA placement"
-							}
-						/>
+						<Textarea className="[&_[data-slot=textarea]]:min-h-40" />
 					</ComposerField>
 					<ComposerField label="Attachments">
 						<div className="flex flex-wrap gap-2">
-							{["HomepagePreview.png", "MobileReview.pdf"].map((attachment) => (
-								<span
-									key={attachment}
-									className="inline-flex items-center gap-1.5 rounded-md border border-border/70 px-2.5 py-1.5 text-sm text-muted-foreground"
-								>
-									<PaperclipIcon className="size-4" />
-									{attachment}
-								</span>
-							))}
 							<Button size="sm" variant="outline">
 								<PlusIcon />
 								Add file

@@ -20,46 +20,11 @@ import {
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
+import type { ArchivedInboxItem } from "@/lib/app-data";
 
-const archivedItems = [
-	{
-		title: "Portal shared with Luma Works",
-		type: "Activity",
-		project: "Client Portal",
-		completed: "May 6",
-		dateRange: "7-days",
-		owner: "Connor Love",
-	},
-	{
-		title: "Homepage wireframes approved",
-		type: "Approval",
-		project: "Acme Website Redesign",
-		completed: "May 5",
-		dateRange: "7-days",
-		owner: "Maya Chen",
-	},
-	{
-		title: "Brand photography uploaded",
-		type: "Request",
-		project: "Fieldstone Refresh",
-		completed: "May 3",
-		dateRange: "30-days",
-		owner: "Jordan Ellis",
-	},
-	{
-		title: "Weekly update delivered",
-		type: "Activity",
-		project: "Brightside Landing Page",
-		completed: "May 1",
-		dateRange: "30-days",
-		owner: "Connor Love",
-	},
-];
-
-const archiveTypes = [...new Set(archivedItems.map((item) => item.type))];
-const archiveProjects = [...new Set(archivedItems.map((item) => item.project))];
-
-export function Archived() {
+export function Archived({ archivedItems }: { archivedItems: ArchivedInboxItem[] }) {
+	const archiveTypes = useMemo(() => [...new Set(archivedItems.map((item) => item.type))], [archivedItems]);
+	const archiveProjects = useMemo(() => [...new Set(archivedItems.map((item) => item.project))], [archivedItems]);
 	const [query, setQuery] = useState("");
 	const [selectedTypes, setSelectedTypes] = useState(archiveTypes);
 	const [selectedProjects, setSelectedProjects] = useState(archiveProjects);
@@ -115,6 +80,8 @@ export function Archived() {
 			</header>
 
 			<ArchiveToolbar
+				archiveProjects={archiveProjects}
+				archiveTypes={archiveTypes}
 				dateRange={dateRange}
 				onDateRangeChange={setDateRange}
 				onProjectChange={setSelectedProjects}
@@ -175,6 +142,8 @@ function TextAction({ children }: { children: ReactNode }) {
 }
 
 function ArchiveToolbar({
+	archiveProjects,
+	archiveTypes,
 	dateRange,
 	onDateRangeChange,
 	onProjectChange,
@@ -184,6 +153,8 @@ function ArchiveToolbar({
 	selectedProjects,
 	selectedTypes,
 }: {
+	archiveProjects: string[];
+	archiveTypes: string[];
 	dateRange: string;
 	onDateRangeChange: (value: string) => void;
 	onProjectChange: (items: string[]) => void;

@@ -1,6 +1,8 @@
-import { portalSummary } from "./portals-data";
-
-export function PortalHeader() {
+export function PortalHeader({
+	summary,
+}: {
+	summary: Array<{ value: string; label: string }>;
+}) {
 	return (
 		<header className="space-y-6 border-b border-border/80 pb-6">
 			<div className="max-w-3xl">
@@ -10,7 +12,7 @@ export function PortalHeader() {
 				</p>
 			</div>
 			<div className="flex flex-wrap gap-x-10 gap-y-4">
-				{portalSummary.map((metric) => (
+				{summary.map((metric) => (
 					<div className="min-w-24" key={metric.label}>
 						<div className="text-xl font-semibold leading-none tracking-tight">
 							{metric.value}

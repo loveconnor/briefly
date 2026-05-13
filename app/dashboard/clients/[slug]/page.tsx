@@ -2,17 +2,11 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { ClientDetail } from "@/components/dashboard/clients/client-detail";
-import { clients, getClient } from "@/components/dashboard/clients/client-data";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getClientBySlug } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
-
-export function generateStaticParams() {
-	return clients.map((client) => ({
-		slug: client.slug,
-	}));
-}
 
 export async function generateMetadata({
 	params,
@@ -20,20 +14,11 @@ export async function generateMetadata({
 	params: Promise<{ slug: string }>;
 }) {
 	const { slug } = await params;
-	const client = getClient(slug);
-
-	if (!client) {
-		return generateMeta({
-			title: "Client",
-			description: "Client relationship dashboard.",
-			canonical: "/dashboard/clients",
-		});
-	}
 
 	return generateMeta({
-		title: client.name,
-		description: `${client.name} relationship dashboard with projects, timeline, requests, deliverables, and portal visibility.`,
-		canonical: `/dashboard/clients/${client.slug}`,
+		title: "Client",
+		description: "Client relationship dashboard.",
+		canonical: `/dashboard/clients/${slug}`,
 	});
 }
 
@@ -57,7 +42,7 @@ export default async function ClientDetailPage({
 	}
 
 	const { slug } = await params;
-	const client = getClient(slug);
+	const client = await getClientBySlug(session.user, slug);
 
 	if (!client) {
 		notFound();

@@ -3,10 +3,12 @@
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Field } from "@/components/ui/field";
 
 export function FilterSelect({
 	formatOption = (option) => option,
@@ -21,18 +23,27 @@ export function FilterSelect({
 	options: string[];
 	value: string;
 }) {
+	const items = options.map((option) => ({
+		label: formatOption(option),
+		value: option,
+	}));
+
 	return (
-		<Select onValueChange={onChange} value={value}>
-			<SelectTrigger aria-label={label} className="md:w-40">
-				<SelectValue>{formatOption(value)}</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				{options.map((option) => (
-					<SelectItem key={option} value={option}>
-						{formatOption(option)}
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+		<Field className="md:w-40">
+			<Select items={items} onValueChange={(nextValue) => nextValue != null && onChange(nextValue)} value={value}>
+				<SelectTrigger aria-label={label} className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent alignItemWithTrigger={false}>
+					<SelectGroup>
+						{items.map((item) => (
+							<SelectItem key={item.value} value={item.value}>
+								{item.label}
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</Field>
 	);
 }

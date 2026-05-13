@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { BillingActivityItem } from "./billing-data";
+import { billingIconMap } from "./billing-icons";
 import { BillingStatusText } from "./billing-status";
 
 export function BillingActivity({
@@ -49,7 +50,7 @@ function BillingActivityRow({
 	item: BillingActivityItem;
 	onSelect: (item: BillingActivityItem) => void;
 }) {
-	const Icon = item.icon;
+	const Icon = billingIconMap[item.icon];
 
 	return (
 		<div className="group grid gap-3 rounded-lg px-2 py-4 transition-colors hover:bg-accent/30 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">

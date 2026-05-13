@@ -83,15 +83,9 @@ function MemberEditor() {
 				title="Assigned projects"
 				description="Choose the project spaces this member can access."
 			>
-				{["Acme Website Redesign", "Nova Brand System", "Gym Launch"].map(
-					(project, index) => (
-						<CheckboxRow
-							defaultChecked={index < 2}
-							key={project}
-							label={project}
-						/>
-					)
-				)}
+				<p className="text-sm text-muted-foreground">
+					Project assignments will appear after projects are stored in the workspace database.
+				</p>
 			</SheetGroup>
 			<SheetGroup
 				title="Access"
@@ -120,10 +114,10 @@ function DomainEditor() {
 	return (
 		<>
 			<SheetField label="Domain">
-				<Input defaultValue="portal.brieflystudio.com" />
+				<Input />
 			</SheetField>
 			<SheetField label="Redirect target">
-				<Input defaultValue="briefly.so/studio" />
+				<Input />
 			</SheetField>
 			<SheetGroup
 				title="DNS records"
@@ -237,7 +231,7 @@ function InvoiceEditor() {
 				<Input defaultValue="USD" />
 			</SheetField>
 			<SheetField label="Invoice footer">
-				<Textarea defaultValue="Thank you for working with Briefly Studio." />
+				<Textarea />
 			</SheetField>
 			<SheetGroup title="Payment methods">
 				<CheckboxRow defaultChecked label="Card payments" />
@@ -252,10 +246,10 @@ function WebhookEditor() {
 	return (
 		<>
 			<SheetField label="Endpoint URL">
-				<Input defaultValue="https://brieflystudio.com/api/webhooks/briefly" />
+				<Input />
 			</SheetField>
 			<SheetField label="Signing secret">
-				<Input defaultValue="whsec_studio_4721" />
+				<Input />
 			</SheetField>
 			<SheetGroup
 				title="Events"

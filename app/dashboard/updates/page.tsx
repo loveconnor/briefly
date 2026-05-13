@@ -5,6 +5,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { UpdatesPage } from "@/components/dashboard/updates/updates-page";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getUpdates } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -32,6 +33,8 @@ export default async function Page() {
 		return <OnboardingFlow />;
 	}
 
+	const updates = await getUpdates(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -40,7 +43,7 @@ export default async function Page() {
 				image: session.user.image,
 			}}
 		>
-			<UpdatesPage />
+			<UpdatesPage updates={updates} />
 		</AppShell>
 	);
 }

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { ChevronRightIcon, UploadIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant } from "@/components/dashboard/badge-tone";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -14,10 +15,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -42,9 +45,18 @@ import {
 } from "../settings-layout";
 import type { DirtyHandler, SheetHandler } from "../settings-types";
 
+const inviteRoleItems = [
+	"Admin",
+	"Project lead",
+	"Designer",
+	"Client collaborator",
+].map((option) => ({ label: option, value: option }));
+
+const inviteProjectItems = ["All projects"].map((option) => ({ label: option, value: option }));
+
 export function GeneralSettings({ onDirty }: { onDirty: DirtyHandler }) {
-	const [workspaceName, setWorkspaceName] = useState("Briefly Studio");
-	const [workspaceUrl, setWorkspaceUrl] = useState("briefly.so/studio");
+	const [workspaceName, setWorkspaceName] = useState("Workspace");
+	const [workspaceUrl, setWorkspaceUrl] = useState("");
 	const [timezone, setTimezone] = useState("Eastern Time (UTC-5)");
 	const [dateFormat, setDateFormat] = useState("May 10, 2026");
 	const [currency, setCurrency] = useState("USD");
@@ -162,7 +174,7 @@ export function GeneralSettings({ onDirty }: { onDirty: DirtyHandler }) {
 					<Button
 						onClick={() => setDangerDialog("delete")}
 						size="sm"
-						variant="destructive-outline"
+						variant="destructive"
 					>
 						Request deletion
 					</Button>
@@ -416,20 +428,20 @@ export function BrandingSettings({ onDirty }: { onDirty: DirtyHandler }) {
 								B
 							</div>
 							<div>
-								<div className="text-base font-semibold">Briefly Studio</div>
+								<div className="text-base font-semibold">Workspace</div>
 								<div className="text-sm text-muted-foreground">Client Portal</div>
 							</div>
 						</div>
 					</div>
 					<div className="space-y-5 p-5">
 						<div>
-							<div className="text-xl font-semibold">Acme Website Redesign</div>
+							<div className="text-xl font-semibold">Project preview</div>
 							<p className="mt-2 text-sm leading-6 text-muted-foreground">
-								Homepage concepts are ready for review.
+								Recorded project details appear here.
 							</p>
 						</div>
 						<div className="space-y-3">
-							{["Creative direction", "Homepage approval", "Launch files"].map(
+							{["Project milestone", "Approval request", "Shared file"].map(
 								(item, index) => (
 									<div
 										className="flex items-center justify-between rounded-md bg-muted/50 px-4 py-3 text-sm"
@@ -496,12 +508,12 @@ export function DomainSettings({ onOpenSheet }: { onOpenSheet: SheetHandler }) {
 			<SettingRow
 				title="briefly.so/studio"
 				value="Primary workspace URL"
-				status={<Badge variant="success">Verified</Badge>}
+				status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Verified</Badge>}
 			/>
 			<SettingRow
 				title="portal.brieflystudio.com"
 				value="Client portal domain"
-				status={<Badge variant="success">Verified</Badge>}
+				status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Verified</Badge>}
 			>
 				<Button
 					onClick={() =>
@@ -589,7 +601,8 @@ export function MemberSettings({ onOpenSheet }: { onOpenSheet: SheetHandler }) {
 									>
 										{index === 4 ? (
 											<Badge
-												variant={value === "Active" ? "success" : "secondary"}
+												className={value === "Active" ? badgeToneClassName("success") : undefined}
+												variant={value === "Active" ? badgeToneVariant("success") : "secondary"}
 											>
 												{value}
 											</Badge>
@@ -653,44 +666,42 @@ function InviteMemberDialog({
 					<div className="grid gap-4 sm:grid-cols-2">
 						<label className="block space-y-2">
 							<span className="text-sm font-medium">Role</span>
-							<Select onValueChange={setRole} value={role}>
-								<SelectTrigger aria-label="Invite role">
-									<SelectValue>{role}</SelectValue>
-								</SelectTrigger>
-								<SelectContent>
-									{[
-										"Admin",
-										"Project lead",
-										"Designer",
-										"Client collaborator",
-									].map((option) => (
-										<SelectItem key={option} value={option}>
-											{option}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<Field>
+								<Select items={inviteRoleItems} onValueChange={(value) => value != null && setRole(value)} value={role}>
+									<SelectTrigger aria-label="Invite role">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent alignItemWithTrigger={false}>
+										<SelectGroup>
+											{inviteRoleItems.map((item) => (
+												<SelectItem key={item.value} value={item.value}>
+													{item.label}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</Field>
 						</label>
 
 						<label className="block space-y-2">
 							<span className="text-sm font-medium">Project access</span>
-							<Select onValueChange={setProject} value={project}>
-								<SelectTrigger aria-label="Invite project access">
-									<SelectValue>{project}</SelectValue>
-								</SelectTrigger>
-								<SelectContent>
-									{[
-										"All projects",
-										"Acme Website",
-										"Nova Redesign",
-										"Gym Launch",
-									].map((option) => (
-										<SelectItem key={option} value={option}>
-											{option}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<Field>
+								<Select items={inviteProjectItems} onValueChange={(value) => value != null && setProject(value)} value={project}>
+									<SelectTrigger aria-label="Invite project access">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent alignItemWithTrigger={false}>
+										<SelectGroup>
+											{inviteProjectItems.map((item) => (
+												<SelectItem key={item.value} value={item.value}>
+													{item.label}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</Field>
 						</label>
 					</div>
 

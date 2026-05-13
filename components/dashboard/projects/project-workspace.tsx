@@ -24,6 +24,7 @@ import {
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -44,7 +45,7 @@ const statusClass: Record<ProjectTaskStatus, string> = {
 	Blocked: "text-destructive-foreground",
 };
 
-const approvalVariant: Record<Project["approvals"][number]["status"], "success" | "warning" | "error"> = {
+const approvalVariant: Record<Project["approvals"][number]["status"], BadgeTone> = {
 	Approved: "success",
 	Waiting: "warning",
 	"Changes requested": "error",
@@ -432,7 +433,10 @@ function ApprovalsTab({ project }: { project: Project }) {
 							</div>
 						</div>
 					<div className="flex flex-wrap items-center gap-x-4 gap-y-2 lg:justify-start">
-						<Badge className="w-fit" variant={approvalVariant[approval.status]}>
+						<Badge
+							className={badgeToneClassName(approvalVariant[approval.status], "w-fit")}
+							variant={badgeToneVariant(approvalVariant[approval.status])}
+						>
 							{approval.status}
 						</Badge>
 						<div className="text-muted-foreground">{approval.waiting}</div>
@@ -624,7 +628,7 @@ export function ProjectWorkspace({ project }: { project: Project }) {
 
 			<Tabs className="gap-5" defaultValue="overview">
 				<div className="overflow-x-auto">
-					<TabsList variant="underline">
+					<TabsList variant="line">
 						<TabsTrigger value="overview">Overview</TabsTrigger>
 						<TabsTrigger value="tasks">Tasks</TabsTrigger>
 						<TabsTrigger value="timeline">Timeline</TabsTrigger>

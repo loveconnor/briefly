@@ -1,13 +1,15 @@
 import { LinkIcon, ShieldCheckIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { domains, type Domain } from "./workspace-data";
+import type { Domain } from "./workspace-data";
 import { QuietNote, StatusText } from "./workspace-primitives";
 
 export function DomainsPage({
+	domains,
 	onAddDomain,
 	onManageDomain,
 }: {
+	domains: Domain[];
 	onAddDomain: () => void;
 	onManageDomain: (domain: Domain) => void;
 }) {
@@ -46,6 +48,9 @@ export function DomainsPage({
 						</Button>
 					</div>
 				))}
+				{domains.length === 0 ? (
+					<div className="py-6 text-sm text-muted-foreground">No domains connected yet.</div>
+				) : null}
 			</div>
 			<QuietNote
 				icon={<ShieldCheckIcon className="size-4" />}

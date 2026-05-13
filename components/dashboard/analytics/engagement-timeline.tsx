@@ -11,19 +11,21 @@ import {
 	YAxis,
 } from "recharts";
 
-import { timelineData, timelineEvents } from "./analytics-data";
+import type { AnalyticsData } from "./analytics-data";
 
 function TimelineTooltip({
 	active,
 	label,
 	payload,
+	events,
 }: {
 	active?: boolean;
+	events: AnalyticsData["timelineEvents"];
 	label?: string;
 	payload?: Array<{ name: string; value: number }>;
 }) {
 	if (!active || !payload?.length) return null;
-	const event = timelineEvents.find((item) => item.day === label);
+	const event = events.find((item) => item.day === label);
 
 	return (
 		<div className="min-w-44 rounded-md border bg-background px-3 py-2 text-xs shadow-xl">
@@ -43,7 +45,13 @@ function TimelineTooltip({
 	);
 }
 
-export function EngagementTimeline() {
+export function EngagementTimeline({
+	data,
+	events,
+}: {
+	data: AnalyticsData["timelineData"];
+	events: AnalyticsData["timelineEvents"];
+}) {
 	return (
 		<div className="min-w-0">
 			<div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -71,7 +79,7 @@ export function EngagementTimeline() {
 			<div className="h-[340px] rounded-lg bg-card/40 p-2 ring-1 ring-border/60">
 				<ResponsiveContainer height="100%" width="100%">
 					<LineChart
-						data={timelineData}
+						data={data}
 						margin={{ bottom: 8, left: -18, right: 18, top: 12 }}
 					>
 						<CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
@@ -87,7 +95,7 @@ export function EngagementTimeline() {
 							tickLine={false}
 							width={34}
 						/>
-						<Tooltip content={<TimelineTooltip />} cursor={{ stroke: "var(--border)" }} />
+						<Tooltip content={<TimelineTooltip events={events} />} cursor={{ stroke: "var(--border)" }} />
 						<Line
 							activeDot={{ r: 4, strokeWidth: 0 }}
 							dataKey="opens"
@@ -130,7 +138,7 @@ export function EngagementTimeline() {
 							strokeWidth={1.1}
 							type="monotone"
 						/>
-						{timelineEvents.map((event) => (
+						{events.map((event) => (
 							<ReferenceDot
 								fill="var(--background)"
 								ifOverflow="extendDomain"
@@ -146,7 +154,7 @@ export function EngagementTimeline() {
 				</ResponsiveContainer>
 			</div>
 			<div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-muted-foreground">
-				{timelineEvents.map((event) => (
+				{events.map((event) => (
 					<div className="flex min-w-0 items-center gap-2" key={event.event}>
 						<span className="h-px w-3 shrink-0 bg-border" />
 						<span className="truncate">

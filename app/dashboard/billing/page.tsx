@@ -5,6 +5,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { BillingPage } from "@/components/dashboard/billing/billing-page";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getBillingData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export default async function Page() {
 		return <OnboardingFlow />;
 	}
 
+	const billing = await getBillingData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -39,7 +42,7 @@ export default async function Page() {
 				image: session.user.image,
 			}}
 		>
-			<BillingPage />
+			<BillingPage data={billing} />
 		</AppShell>
 	);
 }

@@ -11,22 +11,37 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { roles } from "@/components/dashboard/team/team-data";
+import type { Role } from "@/components/dashboard/team/team-types";
 
 export function InviteDialog({
 	open,
 	onOpenChange,
+	projectOptions,
+	roles,
 }: {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	projectOptions: string[];
+	roles: Role[];
 }) {
+	const roleItems = roles.map((role) => ({
+		label: role.name,
+		value: role.name,
+	}));
+	const projectItems = projectOptions.map((projectName) => ({
+		label: projectName,
+		value: projectName,
+	}));
+
 	return (
 		<Dialog onOpenChange={onOpenChange} open={open}>
 			<DialogContent>
@@ -43,35 +58,45 @@ export function InviteDialog({
 					</label>
 					<label className="grid gap-2 text-sm font-medium">
 						Role
-						<Select defaultValue="Designer">
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								{roles.map((role) => (
-									<SelectItem key={role.name} value={role.name}>
-										{role.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
+						<Field>
+							<Select items={roleItems}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent alignItemWithTrigger={false}>
+									<SelectGroup>
+										{roleItems.map((item) => (
+											<SelectItem key={item.value} value={item.value}>
+												{item.label}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</Field>
 					</label>
 					<label className="grid gap-2 text-sm font-medium">
 						Projects
-						<Select defaultValue="Acme Website Redesign">
-							<SelectTrigger>
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="Acme Website Redesign">Acme Website Redesign</SelectItem>
-								<SelectItem value="Nova Launch">Nova Launch</SelectItem>
-								<SelectItem value="Brightside Landing Page">Brightside Landing Page</SelectItem>
-							</SelectContent>
-						</Select>
+						<Field>
+							<Select items={projectItems}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent alignItemWithTrigger={false}>
+									<SelectGroup>
+										{projectItems.map((item) => (
+											<SelectItem key={item.value} value={item.value}>
+												{item.label}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+						</Field>
 					</label>
 					<label className="grid gap-2 text-sm font-medium">
 						Message <span className="text-xs font-normal text-muted-foreground">(optional)</span>
-						<Input placeholder="Can you review the latest portal updates?" />
+						<Input placeholder="Add a short note to the invite email." />
 					</label>
 				</div>
 				<DialogFooter>

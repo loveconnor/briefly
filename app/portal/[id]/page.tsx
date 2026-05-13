@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { PortalHeader } from "@/components/client-portal/portal-header";
 import {
@@ -12,6 +13,7 @@ import {
 import { SidePanel } from "@/components/client-portal/side-panel";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getPortalData } from "@/lib/app-data";
 
 function formatPortalTitle(id: string) {
 	return id
@@ -41,18 +43,22 @@ export default async function Page({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = await params;
-	const projectName = formatPortalTitle(id) || "Client Portal";
+	const portal = await getPortalData(id);
+
+	if (!portal) {
+		notFound();
+	}
 
 	return (
 		<div className="min-h-svh bg-background text-foreground">
-			<PortalHeader projectName={projectName} />
+			<PortalHeader data={portal} />
 
 			<main className="mx-auto w-full max-w-[1240px] px-5 pb-28 sm:px-8 sm:pb-16">
 				<Tabs className="gap-7" defaultValue="overview" id="portal-tabs">
 					<div className="sticky top-0 z-10 -mx-5 overflow-x-auto bg-background/95 px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8">
 						<TabsList
 							className="*:data-[slot=tabs-trigger]:hover:bg-transparent"
-							variant="underline"
+							variant="line"
 						>
 							<TabsTrigger value="overview">Overview</TabsTrigger>
 							<TabsTrigger value="review">Review</TabsTrigger>
@@ -66,27 +72,27 @@ export default async function Page({
 					<div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:items-start">
 						<div className="min-w-0">
 							<TabsContent value="overview">
-								<OverviewTab projectName={projectName} />
+								<OverviewTab data={portal} />
 							</TabsContent>
 							<TabsContent value="review">
-								<ReviewTab projectName={projectName} />
+								<ReviewTab data={portal} />
 							</TabsContent>
 							<TabsContent value="tasks">
-								<TasksTab />
+								<TasksTab data={portal} />
 							</TabsContent>
 							<TabsContent value="messages">
-								<MessagesTab />
+								<MessagesTab data={portal} />
 							</TabsContent>
 							<TabsContent value="files">
-								<FilesTab />
+								<FilesTab data={portal} />
 							</TabsContent>
 							<TabsContent value="activity">
-								<ActivityTab />
+								<ActivityTab data={portal} />
 							</TabsContent>
 						</div>
 
 						<aside className="sticky top-16 hidden pt-1 lg:block">
-							<SidePanel />
+							<SidePanel data={portal} />
 						</aside>
 					</div>
 				</Tabs>

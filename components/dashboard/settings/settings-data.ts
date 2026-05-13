@@ -111,12 +111,7 @@ export const pageCopy: Record<SettingsKey, { title: string; description: string 
 	},
 };
 
-export const members = [
-	["Connor Love", "Owner", "All projects", "Today", "Active"],
-	["Maya Chen", "Admin", "8 projects", "Yesterday", "Active"],
-	["Jordan Ellis", "Designer", "5 projects", "2 days ago", "Active"],
-	["Dana Carter", "Client", "Acme Website", "1 week ago", "Portal-only"],
-];
+export const members: string[][] = [];
 
 export const searchIndex = settingsGroups.flatMap((group) =>
 	group.items.map((item) => ({

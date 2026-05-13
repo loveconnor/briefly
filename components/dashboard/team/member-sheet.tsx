@@ -11,16 +11,17 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { roles } from "@/components/dashboard/team/team-data";
-import type { Member } from "@/components/dashboard/team/team-types";
+import type { Member, Role } from "@/components/dashboard/team/team-types";
 import { getPresence, getPresenceContext } from "@/components/dashboard/team/team-utils";
 
 export function MemberSheet({
 	member,
 	onClose,
+	roles,
 }: {
 	member: Member | null;
 	onClose: () => void;
+	roles: Role[];
 }) {
 	const presence = member ? getPresence(member.status) : "Offline";
 	const context = member ? getPresenceContext(member) : "";

@@ -102,7 +102,6 @@ function ClientInput({
         type={type}
         onChange={(event) => onChange(event.target.value)}
         placeholder={label === "Email" ? "client@example.com" : label}
-        size="lg"
       />
     </div>
   )

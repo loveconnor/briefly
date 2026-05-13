@@ -18,12 +18,14 @@ import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Field } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue
@@ -40,6 +42,11 @@ const dateFilterPresets = [
   { name: "Last Month", value: "lastMonth" },
   { name: "This Year", value: "thisYear" }
 ];
+
+const dateFilterItems = dateFilterPresets.map((item) => ({
+  label: item.name,
+  value: item.value,
+}));
 
 export default function CalendarDateRangePicker({
   className
@@ -185,26 +192,32 @@ export default function CalendarDateRangePicker({
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
-              <Select
-                value={preset}
-                onValueChange={(value) => {
-                  setPreset(value);
-                  changeHandle(value);
-                }}>
-                <SelectTrigger
-                  className="mb-4 flex w-full lg:hidden"
-                  size="sm"
-                  aria-label="Select a value">
-                  <SelectValue placeholder="Last 28 Days" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dateFilterPresets.map((item, key) => (
-                    <SelectItem key={key} value={item.value}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Field className="mb-4 lg:hidden">
+                <Select
+                  items={dateFilterItems}
+                  value={preset}
+                  onValueChange={(value) => {
+                    if (value == null) return;
+                    setPreset(value);
+                    changeHandle(value);
+                  }}>
+                  <SelectTrigger
+                    className="flex w-full"
+                    size="sm"
+                    aria-label="Select a value">
+                    <SelectValue placeholder="Last 28 Days" />
+                  </SelectTrigger>
+                  <SelectContent alignItemWithTrigger={false}>
+                    <SelectGroup>
+                      {dateFilterItems.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
             </div>
             <Calendar
               className="border-s-0 py-0! ps-0! pe-0! lg:border-s lg:ps-4!"

@@ -15,18 +15,19 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { type ClientHealth, type ClientRecord, type ClientStatus } from "./client-data";
 
-const statusStyles: Record<ClientStatus, "success" | "warning" | "error" | "secondary" | "info" | "outline"> = {
+const statusStyles: Record<ClientStatus, BadgeTone | "secondary"> = {
 	Active: "success",
 	Waiting: "warning",
 	Blocked: "error",
 	Paused: "secondary",
 	Completed: "info",
-	Archived: "outline",
+	Archived: "default",
 };
 
 const healthStyles: Record<ClientHealth, string> = {
@@ -35,6 +36,32 @@ const healthStyles: Record<ClientHealth, string> = {
 	"At risk": "border-warning text-warning-foreground",
 	Blocked: "border-destructive text-destructive-foreground",
 };
+
+function getStatusBadgeProps(status: ClientStatus): {
+	className?: string;
+	variant: BadgeVariant;
+} {
+	const tone = statusStyles[status];
+
+	return tone === "secondary"
+		? { variant: "secondary" }
+		: {
+				className: badgeToneClassName(tone),
+				variant: badgeToneVariant(tone),
+			};
+}
+
+function getBlockerBadgeProps(blocker: string): {
+	className: string;
+	variant: BadgeVariant;
+} {
+	const tone: BadgeTone = blocker === "None" ? "success" : "warning";
+
+	return {
+		className: badgeToneClassName(tone),
+		variant: badgeToneVariant(tone),
+	};
+}
 
 function InlineMeta({
 	label,
@@ -77,7 +104,7 @@ function ProjectProgress({ project }: { project: ClientRecord["projects"][number
 			<div className="min-w-0">
 				<div className="flex flex-wrap items-center gap-2">
 					<div className="font-semibold">{project.name}</div>
-					<Badge variant={project.blocker === "None" ? "success" : "warning"}>
+					<Badge {...getBlockerBadgeProps(project.blocker)}>
 						{project.blocker === "None" ? "Moving" : "Blocked"}
 					</Badge>
 				</div>
@@ -128,7 +155,7 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 								{client.name}
 							</h1>
 							<div className="mt-1 flex flex-wrap items-center gap-2">
-								<Badge variant={statusStyles[client.status]}>{client.status}</Badge>
+								<Badge {...getStatusBadgeProps(client.status)}>{client.status}</Badge>
 								<Badge className={healthStyles[client.health]} variant="outline">
 									{client.health}
 								</Badge>
@@ -158,7 +185,7 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 
 			<Tabs defaultValue="overview" className="gap-4">
 				<div className="overflow-x-auto">
-					<TabsList variant="underline">
+					<TabsList variant="line">
 						<TabsTrigger value="overview">Overview</TabsTrigger>
 						<TabsTrigger value="projects">Projects</TabsTrigger>
 						<TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -187,7 +214,7 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 													{project.phase} · {project.status}
 												</div>
 											</div>
-											<Badge variant={project.blocker === "None" ? "success" : "warning"}>
+											<Badge {...getBlockerBadgeProps(project.blocker)}>
 												{project.blocker === "None" ? "No blockers" : project.blocker}
 											</Badge>
 										</div>
@@ -302,7 +329,10 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 											</div>
 										</div>
 										<div className="flex flex-wrap items-center gap-2 md:justify-end">
-											<Badge variant={request.status === "Blocked" ? "error" : "warning"}>
+											<Badge
+												className={badgeToneClassName(request.status === "Blocked" ? "error" : "warning")}
+												variant={badgeToneVariant(request.status === "Blocked" ? "error" : "warning")}
+											>
 												{request.status}
 											</Badge>
 											<Button size="sm" variant="outline">Reply</Button>
@@ -352,17 +382,20 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 						/>
 						<div className="grid gap-x-8 gap-y-4 border-t py-5 md:grid-cols-[minmax(0,1fr)_14rem_14rem]">
 							<InlineMeta label="Latest visibility" value={client.portalActivity} />
-							<InlineMeta label="Viewed this week" value={client.portalTone === "good" ? "8 views" : "Low activity"} />
-							<InlineMeta label="Most viewed" value="Homepage Review" />
+							<InlineMeta label="Viewed this week" value={client.portalTone === "good" ? "Active" : "Low activity"} />
+							<InlineMeta label="Most viewed" value={client.portalPages[0]?.label ?? "No portal pages"} />
 						</div>
 						<div className="mt-6 border-t">
-							{["Homepage Review", "Launch Checklist", "Final Handoff"].map((page, index) => (
-								<div className="grid min-h-14 items-center gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_14rem_14rem]" key={page}>
-									<div className="font-semibold">{page}</div>
-									<div className="text-sm text-muted-foreground">{index === 0 ? "Most viewed" : "Shared page"}</div>
-									<div className="text-sm text-muted-foreground">{index === 0 ? "4 views" : index === 1 ? "1 approval" : "0 unread"}</div>
+							{client.portalPages.map((page) => (
+								<div className="grid min-h-14 items-center gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_14rem_14rem]" key={page.label}>
+									<div className="font-semibold">{page.label}</div>
+									<div className="text-sm text-muted-foreground">{page.meta}</div>
+									<div className="text-sm text-muted-foreground">{page.value}</div>
 								</div>
 							))}
+							{client.portalPages.length === 0 ? (
+								<div className="py-5 text-sm text-muted-foreground">No portal pages recorded.</div>
+							) : null}
 						</div>
 					</section>
 				</TabsContent>
@@ -375,11 +408,7 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 							title="Files"
 						/>
 						<div className="border-t">
-							{[
-								["Homepage-v3.fig", "Updated yesterday", "Shared with client"],
-								["Brand-assets.zip", "Awaiting upload", "Client owner"],
-								["Launch-checklist.pdf", "Updated last week", "Ready for review"],
-							].map(([name, updated, state]) => (
+							{client.files.map(({ name, updated, state }) => (
 								<div className="grid gap-3 py-4 sm:grid-cols-[1fr_10rem_10rem]" key={name}>
 									<div className="flex min-w-0 items-center gap-2">
 										{name.endsWith(".zip") ? <UploadIcon className="size-4 text-muted-foreground" /> : <PaperclipIcon className="size-4 text-muted-foreground" />}
@@ -389,6 +418,9 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 									<div className="text-sm text-muted-foreground">{state}</div>
 								</div>
 							))}
+							{client.files.length === 0 ? (
+								<div className="py-5 text-sm text-muted-foreground">No files recorded for this client.</div>
+							) : null}
 						</div>
 					</section>
 				</TabsContent>

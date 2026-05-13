@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
 import {
 	Card,
 	CardAction,
@@ -31,6 +32,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -39,7 +41,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import {
 	clientStatusOptions,
-	clients,
 	type ClientHealth,
 	type ClientRecord,
 	type ClientStatus,
@@ -59,23 +60,13 @@ const healthAccentStyles: Record<ClientHealth, string> = {
 	Blocked: "border-destructive text-destructive-foreground",
 };
 
-type BadgeVariant =
-	| "default"
-	| "destructive"
-	| "outline"
-	| "secondary"
-	| "info"
-	| "success"
-	| "warning"
-	| "error";
-
-const statusStyles: Record<ClientStatus, BadgeVariant> = {
+const statusStyles: Record<ClientStatus, BadgeTone | "secondary"> = {
 	Active: "success",
 	Waiting: "warning",
 	Blocked: "error",
 	Paused: "secondary",
 	Completed: "info",
-	Archived: "outline",
+	Archived: "default",
 };
 
 const statusIcons: Record<ClientStatus, LucideIcon> = {
@@ -86,6 +77,32 @@ const statusIcons: Record<ClientStatus, LucideIcon> = {
 	Completed: CheckCircle2Icon,
 	Archived: CheckCircle2Icon,
 };
+
+function getStatusBadgeProps(status: ClientStatus, className?: string): {
+	className?: string;
+	variant: BadgeVariant;
+} {
+	const tone = statusStyles[status];
+
+	return tone === "secondary"
+		? { className, variant: "secondary" }
+		: {
+				className: badgeToneClassName(tone, className),
+				variant: badgeToneVariant(tone),
+			};
+}
+
+const statusItems = clientStatusOptions.map((option) => ({
+	label: option,
+	value: option,
+}));
+
+const sortItems = [
+	{ label: "Attention first", value: "attention" },
+	{ label: "Name", value: "name" },
+	{ label: "Active projects", value: "projects" },
+	{ label: "Last activity", value: "activity" },
+];
 
 function InlineStat({
 	label,
@@ -145,7 +162,7 @@ function ClientCard({ client }: { client: ClientRecord }) {
 						</div>
 					</div>
 					<CardAction>
-						<Badge variant={statusStyles[client.status]}>{client.status}</Badge>
+						<Badge {...getStatusBadgeProps(client.status)}>{client.status}</Badge>
 					</CardAction>
 				</CardHeader>
 				<CardPanel className="space-y-4 px-5">
@@ -167,7 +184,7 @@ function ClientCard({ client }: { client: ClientRecord }) {
 	);
 }
 
-export function ClientsBoard() {
+export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 	const [query, setQuery] = useState("");
 	const [status, setStatus] = useState<ClientStatus | "All">("All");
 	const [sort, setSort] = useState("attention");
@@ -233,45 +250,48 @@ export function ClientsBoard() {
 					</InputGroup>
 				</Field>
 				<div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:flex">
-					<Select
-						onValueChange={(value) => setStatus(value as ClientStatus | "All")}
-						value={status}
-					>
-						<SelectTrigger aria-label="Filter by status" className="md:w-36">
-							<ListFilterIcon className="size-4 text-muted-foreground" />
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{clientStatusOptions.map((option) => (
-								<SelectItem key={option} value={option}>
-									{option}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<Select
-						onValueChange={setSort}
-						value={sort}
-					>
-						<SelectTrigger aria-label="Sort clients" className="md:w-44">
-							<ArrowUpDownIcon className="size-4 text-muted-foreground" />
-							<SelectValue>
-								{sort === "attention"
-									? "Attention first"
-									: sort === "projects"
-										? "Active projects"
-										: sort === "activity"
-											? "Last activity"
-											: "Name"}
-							</SelectValue>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="attention">Attention first</SelectItem>
-							<SelectItem value="name">Name</SelectItem>
-							<SelectItem value="projects">Active projects</SelectItem>
-							<SelectItem value="activity">Last activity</SelectItem>
-						</SelectContent>
-					</Select>
+					<Field className="md:w-36">
+						<Select
+							items={statusItems}
+							onValueChange={(value) => value != null && setStatus(value as ClientStatus | "All")}
+							value={status}
+						>
+							<SelectTrigger aria-label="Filter by status" className="w-full">
+								<ListFilterIcon className="size-4 text-muted-foreground" />
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent alignItemWithTrigger={false}>
+								<SelectGroup>
+									{statusItems.map((item) => (
+										<SelectItem key={item.value} value={item.value}>
+											{item.label}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</Field>
+					<Field className="md:w-44">
+						<Select
+							items={sortItems}
+							onValueChange={(value) => value != null && setSort(value)}
+							value={sort}
+						>
+							<SelectTrigger aria-label="Sort clients" className="w-full">
+								<ArrowUpDownIcon className="size-4 text-muted-foreground" />
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent alignItemWithTrigger={false}>
+								<SelectGroup>
+									{sortItems.map((item) => (
+										<SelectItem key={item.value} value={item.value}>
+											{item.label}
+										</SelectItem>
+									))}
+								</SelectGroup>
+							</SelectContent>
+						</Select>
+					</Field>
 					<ToggleGroup
 						aria-label="View options"
 						onValueChange={(value) => value[0] && setView(value[0])}
@@ -315,7 +335,7 @@ export function ClientsBoard() {
 										</div>
 									</div>
 								</div>
-								<Badge className="w-fit self-center" variant={statusStyles[client.status]}>
+								<Badge {...getStatusBadgeProps(client.status, "w-fit self-center")}>
 									{client.status}
 								</Badge>
 								<div className="min-w-0 self-center text-sm">
@@ -370,7 +390,7 @@ export function ClientsBoard() {
 										<div className="truncate text-sm font-semibold">{deliverable}</div>
 										<div className="text-xs text-muted-foreground">{client.name}</div>
 									</div>
-									<Badge variant={statusStyles[client.status]}>{client.status}</Badge>
+									<Badge {...getStatusBadgeProps(client.status)}>{client.status}</Badge>
 								</div>
 							);
 						})}

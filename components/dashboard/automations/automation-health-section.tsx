@@ -1,23 +1,34 @@
-import { automations, attentionItems, recentActivity, type Automation } from "./automations-data";
+import type { AutomationsData, Automation } from "@/lib/app-data";
 import { cn } from "@/lib/utils";
+import { automationIconMap } from "./automation-icons";
 
 export function AutomationHealthSection({
+	automations,
+	attentionItems,
 	onSelect,
+	recentActivity,
 }: {
+	automations: Automation[];
+	attentionItems: AutomationsData["attentionItems"];
 	onSelect: (automation: Automation) => void;
+	recentActivity: AutomationsData["recentActivity"];
 }) {
 	return (
 		<section className="grid gap-7 pt-1 opacity-90 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.75fr)]">
-			<RecentAutomationActivity onSelect={onSelect} />
-			<AttentionNeeded />
+			<RecentAutomationActivity automations={automations} onSelect={onSelect} recentActivity={recentActivity} />
+			<AttentionNeeded attentionItems={attentionItems} />
 		</section>
 	);
 }
 
 function RecentAutomationActivity({
+	automations,
 	onSelect,
+	recentActivity,
 }: {
+	automations: Automation[];
 	onSelect: (automation: Automation) => void;
+	recentActivity: AutomationsData["recentActivity"];
 }) {
 	return (
 		<section className="min-w-0">
@@ -33,7 +44,7 @@ function RecentAutomationActivity({
 			</div>
 			<div className="space-y-1">
 				{recentActivity.map((activity) => {
-					const Icon = activity.icon;
+					const Icon = automationIconMap[activity.icon];
 					const automation = automations.find(
 						(item) => item.slug === activity.automationSlug
 					);
@@ -73,12 +84,19 @@ function RecentAutomationActivity({
 						</div>
 					);
 				})}
+				{recentActivity.length === 0 ? (
+					<p className="py-2 text-sm text-muted-foreground">No automation runs recorded yet.</p>
+				) : null}
 			</div>
 		</section>
 	);
 }
 
-function AttentionNeeded() {
+function AttentionNeeded({
+	attentionItems,
+}: {
+	attentionItems: AutomationsData["attentionItems"];
+}) {
 	return (
 		<aside className="min-w-0">
 			<div className="mb-4 flex items-center justify-between">
@@ -86,11 +104,11 @@ function AttentionNeeded() {
 					<h2 className="text-base font-semibold">Attention needed</h2>
 					<p className="text-sm text-muted-foreground/80">Quiet checks before work stalls.</p>
 				</div>
-				<span className="text-sm font-medium tabular-nums text-muted-foreground">3</span>
+				<span className="text-sm font-medium tabular-nums text-muted-foreground">{attentionItems.length}</span>
 			</div>
 			<div className="space-y-1">
 				{attentionItems.map((item) => {
-					const Icon = item.icon;
+					const Icon = automationIconMap[item.icon];
 					return (
 						<div className="flex items-start gap-3 rounded-md py-2" key={item.title}>
 							<div
@@ -117,6 +135,9 @@ function AttentionNeeded() {
 						</div>
 					);
 				})}
+				{attentionItems.length === 0 ? (
+					<p className="py-2 text-sm text-muted-foreground">No automation issues recorded.</p>
+				) : null}
 			</div>
 		</aside>
 	);

@@ -1,8 +1,17 @@
 import { CreditCardIcon, DownloadIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { BillingData } from "@/lib/app-data";
 
-export function ClientPortalBilling() {
+export function ClientPortalBilling({
+	portal,
+}: {
+	portal: BillingData["clientPortal"];
+}) {
+	if (!portal) {
+		return null;
+	}
+
 	return (
 		<section className="space-y-5 pt-2">
 			<div>
@@ -15,8 +24,8 @@ export function ClientPortalBilling() {
 			<div className="grid gap-3 rounded-lg px-2 py-4 transition-colors hover:bg-accent/30 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
 				<div className="min-w-0">
 					<p className="text-xs font-medium text-muted-foreground/60">Outstanding invoice</p>
-					<h3 className="mt-2 font-medium">Website Redesign Final Payment</h3>
-					<p className="mt-1 text-sm text-muted-foreground/75">Due Aug 12 · $4,200</p>
+					<h3 className="mt-2 font-medium">{portal.title}</h3>
+					<p className="mt-1 text-sm text-muted-foreground/75">{portal.detail}</p>
 				</div>
 				<Button className="h-8 sm:self-start" size="sm" variant="outline">
 					<CreditCardIcon />

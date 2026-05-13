@@ -5,6 +5,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { FilesRepository } from "@/components/dashboard/files/files-repository";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getFilesData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export default async function FilesPage() {
 		return <OnboardingFlow />;
 	}
 
+	const filesData = await getFilesData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -39,7 +42,7 @@ export default async function FilesPage() {
 				image: session.user.image,
 			}}
 		>
-			<FilesRepository />
+			<FilesRepository files={filesData.files} missingFiles={filesData.missingFiles} />
 		</AppShell>
 	);
 }

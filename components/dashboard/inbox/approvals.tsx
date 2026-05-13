@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -22,44 +23,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import type { InboxApprovalItem } from "@/lib/app-data";
 
-const approvalItems = [
-	{
-		title: "Homepage Design",
-		project: "Acme Website Redesign",
-		requestedBy: "Maya Chen",
-		waiting: "3 days overdue",
-		priority: "High",
-		source: "client",
-		detail: "Final desktop and mobile homepage concepts are ready for client signoff.",
-		variant: "error" as const,
-		urgency: 0,
-	},
-	{
-		title: "Launch Checklist",
-		project: "Brightside Landing Page",
-		requestedBy: "QA Team",
-		waiting: "Due today",
-		priority: "High",
-		source: "internal",
-		detail: "Analytics, redirects, forms, and accessibility checks need internal confirmation.",
-		variant: "warning" as const,
-		urgency: 1,
-	},
-	{
-		title: "SEO Audit",
-		project: "Northstar Growth Retainer",
-		requestedBy: "Connor Love",
-		waiting: "Waiting 1 day",
-		priority: "Medium",
-		source: "client",
-		detail: "Client needs to confirm recommended page title and URL changes.",
-		variant: "outline" as const,
-		urgency: 2,
-	},
-];
-
-export function Approvals() {
+export function Approvals({ approvalItems }: { approvalItems: InboxApprovalItem[] }) {
 	const [queueMode, setQueueMode] = useState("needs-decision");
 	const [showInternalApprovals, setShowInternalApprovals] = useState(true);
 	const [showClientApprovals, setShowClientApprovals] = useState(true);
@@ -86,7 +52,7 @@ export function Approvals() {
 
 	const overdueCount = visibleApprovals.filter((item) => item.variant === "error").length;
 	const dueTodayCount = visibleApprovals.filter((item) => item.variant === "warning").length;
-	const waitingCount = visibleApprovals.filter((item) => item.variant === "outline").length;
+	const waitingCount = visibleApprovals.filter((item) => item.variant === "default").length;
 
 	return (
 		<div className="space-y-4">
@@ -116,7 +82,12 @@ export function Approvals() {
 									<h2 className="font-semibold">{item.title} Review</h2>
 									<p className="text-muted-foreground mt-1 text-sm">{item.project}</p>
 								</div>
-								<Badge variant={item.variant}>{item.waiting}</Badge>
+								<Badge
+									className={badgeToneClassName(item.variant)}
+									variant={badgeToneVariant(item.variant)}
+								>
+									{item.waiting}
+								</Badge>
 							</div>
 							<div className="mt-3 space-y-3">
 								<p className="text-sm leading-6">{item.detail}</p>
@@ -153,7 +124,7 @@ export function Approvals() {
 					<div className="mt-4 divide-y divide-border/55 border-t border-border/60">
 						<QueueMetric label="Overdue" value={String(overdueCount)} variant="error" />
 						<QueueMetric label="Due today" value={String(dueTodayCount)} variant="warning" />
-						<QueueMetric label="Waiting" value={String(waitingCount)} variant="outline" />
+						<QueueMetric label="Waiting" value={String(waitingCount)} variant="default" />
 					</div>
 				</aside>
 			</div>
@@ -225,12 +196,14 @@ function QueueMetric({
 }: {
 	label: string;
 	value: string;
-	variant: "error" | "outline" | "warning";
+	variant: Extract<BadgeTone, "error" | "default" | "warning">;
 }) {
 	return (
 		<div className="flex items-center justify-between py-3">
 			<span className="text-sm font-medium">{label}</span>
-			<Badge variant={variant}>{value}</Badge>
+			<Badge className={badgeToneClassName(variant)} variant={badgeToneVariant(variant)}>
+				{value}
+			</Badge>
 		</div>
 	);
 }

@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { type Automation } from "./automations-data";
+import { automationIconMap } from "./automation-icons";
 import { runStatusClass, statusClass, statusLabel } from "./automations-display";
 
 export function AutomationDetailSheet({
@@ -26,7 +27,7 @@ export function AutomationDetailSheet({
 		return null;
 	}
 
-	const Icon = automation.icon;
+	const Icon = automationIconMap[automation.icon];
 
 	return (
 		<Sheet onOpenChange={(open) => !open && onClose()} open={Boolean(automation)}>

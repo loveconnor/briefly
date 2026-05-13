@@ -50,13 +50,8 @@ export const navGroups: SidebarNavGroup[] = [
 			},
 			{
 				title: "Projects",
+				path: "/dashboard/projects",
 				icon: <SquareKanbanIcon />,
-				subItems: [
-					{ title: "Acme Website", path: "/dashboard/projects/acme-website" },
-					{ title: "Nova Redesign", path: "/dashboard/projects/nova-redesign" },
-					{ title: "Gym Launch", path: "/dashboard/projects/gym-launch" },
-					{ title: "View All", path: "/dashboard/projects" },
-				],
 			},
 			{
 				title: "Clients",
@@ -90,14 +85,8 @@ export const navGroups: SidebarNavGroup[] = [
 		items: [
 			{
 				title: "Templates",
+				path: "/dashboard/templates",
 				icon: <BriefcaseBusinessIcon />,
-				subItems: [
-					{ title: "Website delivery", path: "/dashboard/templates/website-redesign-system" },
-					{ title: "SEO campaigns", path: "/dashboard/templates/seo-campaign-operating-system" },
-					{ title: "Branding systems", path: "/dashboard/templates/brand-identity-blueprint" },
-					{ title: "Monthly retainers", path: "/dashboard/templates/monthly-retainer-rhythm" },
-					{ title: "Custom workflows", path: "/dashboard/templates/custom-client-workflow" },
-				],
 			},
 			{
 				title: "Automations",

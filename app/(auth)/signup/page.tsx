@@ -120,7 +120,7 @@ function EmailPasswordSignupForm() {
           id="name"
           name="name"
           type="text"
-          placeholder="John Doe"
+          placeholder="Your name"
           autoComplete="name"
           required
           disabled={pending}

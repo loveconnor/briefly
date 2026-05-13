@@ -7,15 +7,17 @@ import { AutomationHealthSection } from "./automation-health-section";
 import { AutomationRulesSection } from "./automation-rules-section";
 import { AutomationTemplates } from "./automation-templates";
 import { AutomationsHeader } from "./automations-header";
-import { automations, type Automation } from "./automations-data";
+import type { Automation } from "./automations-data";
 import { type AutomationFilter } from "./automations-display";
 import { OperationalSummaryStrip } from "./operational-summary-strip";
+import type { AutomationsData } from "@/lib/app-data";
 
 type AutomationsPageProps = {
+	data: AutomationsData;
 	initialFilter?: AutomationFilter;
 };
 
-export function AutomationsPage({ initialFilter = "all" }: AutomationsPageProps) {
+export function AutomationsPage({ data, initialFilter = "all" }: AutomationsPageProps) {
 	const [filter, setFilter] = useState<AutomationFilter>(initialFilter);
 	const [query, setQuery] = useState("");
 	const [selectedAutomation, setSelectedAutomation] = useState<Automation | null>(null);
@@ -23,7 +25,7 @@ export function AutomationsPage({ initialFilter = "all" }: AutomationsPageProps)
 	const filteredAutomations = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
 
-		return automations.filter((automation) => {
+		return data.automations.filter((automation) => {
 			const matchesFilter =
 				filter === "all"
 					? true
@@ -44,13 +46,18 @@ export function AutomationsPage({ initialFilter = "all" }: AutomationsPageProps)
 
 			return matchesFilter && (!normalizedQuery || searchable.includes(normalizedQuery));
 		});
-	}, [filter, query]);
+	}, [data.automations, filter, query]);
 
 	return (
 		<div className="mx-auto w-full max-w-[1360px] space-y-6">
 			<AutomationsHeader />
-			<OperationalSummaryStrip />
-			<AutomationHealthSection onSelect={setSelectedAutomation} />
+			<OperationalSummaryStrip summary={data.summary} />
+			<AutomationHealthSection
+				automations={data.automations}
+				attentionItems={data.attentionItems}
+				onSelect={setSelectedAutomation}
+				recentActivity={data.recentActivity}
+			/>
 			<AutomationRulesSection
 				automations={filteredAutomations}
 				filter={filter}
@@ -59,7 +66,7 @@ export function AutomationsPage({ initialFilter = "all" }: AutomationsPageProps)
 				onSelect={setSelectedAutomation}
 				query={query}
 			/>
-			<AutomationTemplates />
+			<AutomationTemplates templates={data.templates} />
 			<AutomationDetailSheet
 				automation={selectedAutomation}
 				onClose={() => setSelectedAutomation(null)}

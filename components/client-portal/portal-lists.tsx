@@ -9,12 +9,12 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { activity, feedItems, files, tasks } from "./client-portal-data";
+import type { PortalData } from "./client-portal-data";
 
-export function TaskList({ limit }: { limit?: number }) {
+export function TaskList({ data, limit }: { data: PortalData; limit?: number }) {
 	return (
 		<div>
-			{tasks.slice(0, limit).map((task) => (
+			{data.tasks.slice(0, limit).map((task) => (
 				<div className="flex items-start gap-4 py-3.5" key={task.title}>
 					<span
 						className={cn(
@@ -38,14 +38,17 @@ export function TaskList({ limit }: { limit?: number }) {
 					</div>
 				</div>
 			))}
+			{data.tasks.length === 0 ? (
+				<p className="py-3 text-sm text-muted-foreground">No client tasks recorded.</p>
+			) : null}
 		</div>
 	);
 }
 
-export function MessageList({ limit }: { limit?: number }) {
+export function MessageList({ data, limit }: { data: PortalData; limit?: number }) {
 	return (
 		<div className="space-y-6">
-			{feedItems.slice(0, limit).map((item) => (
+			{data.messages.slice(0, limit).map((item) => (
 				<article key={`${item.author}-${item.action}`}>
 					<div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
 						<p className="font-semibold">{item.author}</p>
@@ -64,14 +67,17 @@ export function MessageList({ limit }: { limit?: number }) {
 					) : null}
 				</article>
 			))}
+			{data.messages.length === 0 ? (
+				<p className="text-sm text-muted-foreground">No messages recorded.</p>
+			) : null}
 		</div>
 	);
 }
 
-export function FileList({ limit }: { limit?: number }) {
+export function FileList({ data, limit }: { data: PortalData; limit?: number }) {
 	return (
 		<div>
-			{files.slice(0, limit).map((file) => (
+			{data.files.slice(0, limit).map((file) => (
 				<a
 					className="grid gap-3 py-3.5 transition-colors hover:text-foreground sm:grid-cols-[1fr_auto] sm:items-center"
 					href="#portal-tabs"
@@ -89,45 +95,45 @@ export function FileList({ limit }: { limit?: number }) {
 						</span>
 					</span>
 					<span className="flex items-center gap-1 text-sm font-medium sm:justify-self-end">
-						{file.action === "Download" ? <DownloadIcon className="size-4" /> : null}
-						{file.action}
+						<DownloadIcon className="size-4" />
+						Download
 					</span>
 				</a>
 			))}
+			{data.files.length === 0 ? (
+				<p className="py-3 text-sm text-muted-foreground">No files shared yet.</p>
+			) : null}
 		</div>
 	);
 }
 
-export function ActivityList() {
+export function ActivityList({ data }: { data: PortalData }) {
 	return (
 		<div className="space-y-1">
-			{activity.map((item) => (
+			{data.activity.map((item) => (
 				<div
 					className="grid gap-3 py-4 sm:grid-cols-[2.25rem_minmax(0,1fr)_7rem]"
-					key={`${item.actor}-${item.action}`}
+					key={`${item.title}-${item.detail}`}
 				>
 					<span className="flex size-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
-						<ActivityIcon type={item.type} />
+						<ActivityIcon type={item.icon} />
 					</span>
 					<div className="min-w-0">
-						<p className="font-medium">
-							{item.actor}{" "}
-							<span className="font-normal text-muted-foreground">
-								{item.action}
-							</span>
-						</p>
+						<p className="font-medium">{item.title}</p>
 						<p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-							{item.context}
+							{item.detail}
 						</p>
 					</div>
-					<p className="text-sm text-muted-foreground sm:text-right">{item.time}</p>
 				</div>
 			))}
+			{data.activity.length === 0 ? (
+				<p className="py-3 text-sm text-muted-foreground">No portal activity recorded.</p>
+			) : null}
 		</div>
 	);
 }
 
-function FileIcon({ type }: { type: (typeof files)[number]["icon"] }) {
+function FileIcon({ type }: { type: PortalData["files"][number]["icon"] }) {
 	if (type === "image") {
 		return <ImageIcon className="size-5" />;
 	}
@@ -135,13 +141,17 @@ function FileIcon({ type }: { type: (typeof files)[number]["icon"] }) {
 	return <FileTextIcon className="size-5" />;
 }
 
-function ActivityIcon({ type }: { type: (typeof activity)[number]["type"] }) {
-	if (type === "view") {
+function ActivityIcon({ type }: { type: PortalData["activity"][number]["icon"] }) {
+	if (type === "viewed") {
 		return <EyeIcon className="size-4" />;
 	}
 
 	if (type === "upload") {
 		return <UploadIcon className="size-4" />;
+	}
+
+	if (type === "download") {
+		return <DownloadIcon className="size-4" />;
 	}
 
 	return <CheckCircle2Icon className="size-4" />;

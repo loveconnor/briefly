@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ArrowRightIcon, CheckIcon, CircleIcon, PlusIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Project } from "./project-data";
 
-const statusVariant: Record<Project["status"], "success" | "warning" | "error" | "info"> = {
+const statusVariant: Record<Project["status"], BadgeTone> = {
 	Active: "success",
 	Blocked: "error",
 	Complete: "info",
@@ -64,7 +65,10 @@ export function ProjectsList({ projects }: { projects: Project[] }) {
 						<div className="text-sm text-muted-foreground">
 							{project.blockers.length ? `${project.blockers.length} blocker${project.blockers.length > 1 ? "s" : ""}` : "No blockers"}
 						</div>
-						<Badge className="w-fit" variant={statusVariant[project.status]}>
+						<Badge
+							className={badgeToneClassName(statusVariant[project.status], "w-fit")}
+							variant={badgeToneVariant(statusVariant[project.status])}
+						>
 							{project.status}
 						</Badge>
 						<ArrowRightIcon className="hidden size-4 text-muted-foreground lg:block" />

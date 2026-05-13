@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -31,75 +32,7 @@ import {
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
-
-const activityItems = [
-	{
-		icon: CheckCircle2,
-		title: "Homepage approved by Acme",
-		detail: "Approval recorded and the homepage build phase opened.",
-		client: "Acme",
-		project: "Website Redesign",
-		type: "Approval",
-		time: "9:42 AM",
-		dateRange: "today",
-		tone: "success",
-	},
-	{
-		icon: FileUp,
-		title: "Nova uploaded branding assets",
-		detail: "Logo files, brand colors, and type guidelines are ready.",
-		client: "Nova",
-		project: "Brand Refresh",
-		type: "Upload",
-		time: "9:18 AM",
-		dateRange: "today",
-		tone: "info",
-	},
-	{
-		icon: Send,
-		title: "Weekly update sent to Brightside",
-		detail: "Included milestones, open questions, and Friday targets.",
-		client: "Brightside",
-		project: "Landing Page",
-		type: "Update",
-		time: "8:36 AM",
-		dateRange: "today",
-		tone: "default",
-	},
-	{
-		icon: GitPullRequestArrow,
-		title: "Landing page moved to QA",
-		detail: "Internal review is complete and QA signoff is pending.",
-		client: "Brightside",
-		project: "Landing Page",
-		type: "Phase",
-		time: "Yesterday",
-		dateRange: "week",
-		tone: "warning",
-	},
-	{
-		icon: MessageSquareText,
-		title: "Northstar requested homepage revisions",
-		detail: "Client left comments on the pricing and testimonials sections.",
-		client: "Northstar",
-		project: "Website Redesign",
-		type: "Request",
-		time: "Yesterday",
-		dateRange: "week",
-		tone: "error",
-	},
-	{
-		icon: Share2,
-		title: "Portal shared with Luma Works",
-		detail: "Client portal invitation sent to the primary stakeholder.",
-		client: "Luma Works",
-		project: "Client Portal",
-		type: "System",
-		time: "Mon",
-		dateRange: "month",
-		tone: "default",
-	},
-];
+import type { InboxActivityItem } from "@/lib/app-data";
 
 const toneClassMap = {
 	default: "bg-muted text-muted-foreground",
@@ -109,11 +42,19 @@ const toneClassMap = {
 	warning: "bg-warning/8 text-warning-foreground",
 };
 
-const clients = [...new Set(activityItems.map((item) => item.client))];
-const projects = [...new Set(activityItems.map((item) => item.project))];
-const types = [...new Set(activityItems.map((item) => item.type))];
+const iconMap = {
+	approval: CheckCircle2,
+	comment: MessageSquareText,
+	phase: GitPullRequestArrow,
+	send: Send,
+	share: Share2,
+	upload: FileUp,
+};
 
-export function AllActivity() {
+export function AllActivity({ activityItems }: { activityItems: InboxActivityItem[] }) {
+	const clients = useMemo(() => [...new Set(activityItems.map((item) => item.client))], [activityItems]);
+	const projects = useMemo(() => [...new Set(activityItems.map((item) => item.project))], [activityItems]);
+	const types = useMemo(() => [...new Set(activityItems.map((item) => item.type))], [activityItems]);
 	const [query, setQuery] = useState("");
 	const [selectedClients, setSelectedClients] = useState(clients);
 	const [selectedProjects, setSelectedProjects] = useState(projects);
@@ -166,16 +107,19 @@ export function AllActivity() {
 			</header>
 
 			<ActivityToolbar
+				clients={clients}
 				dateRange={dateRange}
 				onClientChange={setSelectedClients}
 				onDateRangeChange={setDateRange}
 				onProjectChange={setSelectedProjects}
 				onQueryChange={setQuery}
 				onTypeChange={setSelectedTypes}
+				projects={projects}
 				query={query}
 				selectedClients={selectedClients}
 				selectedProjects={selectedProjects}
 				selectedTypes={selectedTypes}
+				types={types}
 			/>
 
 			<section className="border-t border-border/60">
@@ -187,7 +131,7 @@ export function AllActivity() {
 				</div>
 				<div className="relative before:absolute before:top-2 before:bottom-2 before:left-4 before:w-px before:bg-border/45">
 					{filteredItems.map((item) => {
-						const Icon = item.icon;
+						const Icon = iconMap[item.icon];
 
 						return (
 							<div
@@ -218,7 +162,10 @@ export function AllActivity() {
 											<span>{item.client}</span>
 											<span aria-hidden="true">·</span>
 											<span>{item.project}</span>
-											<Badge className="ml-1" variant={item.tone === "default" ? "outline" : item.tone as "error" | "info" | "success" | "warning"}>
+											<Badge
+												className={badgeToneClassName(item.tone as BadgeTone, "ml-1")}
+												variant={badgeToneVariant(item.tone as BadgeTone)}
+											>
 												{item.type}
 											</Badge>
 										</div>
@@ -254,27 +201,33 @@ function TextAction({ children }: { children: ReactNode }) {
 }
 
 function ActivityToolbar({
+	clients,
 	dateRange,
 	onClientChange,
 	onDateRangeChange,
 	onProjectChange,
 	onQueryChange,
 	onTypeChange,
+	projects,
 	query,
 	selectedClients,
 	selectedProjects,
 	selectedTypes,
+	types,
 }: {
+	clients: string[];
 	dateRange: string;
 	onClientChange: (items: string[]) => void;
 	onDateRangeChange: (value: string) => void;
 	onProjectChange: (items: string[]) => void;
 	onQueryChange: (value: string) => void;
 	onTypeChange: (items: string[]) => void;
+	projects: string[];
 	query: string;
 	selectedClients: string[];
 	selectedProjects: string[];
 	selectedTypes: string[];
+	types: string[];
 }) {
 	return (
 		<div className="flex flex-col gap-3 md:flex-row md:items-center">

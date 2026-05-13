@@ -5,13 +5,14 @@ import { PortalDetailsSheet } from "./portal-details-sheet";
 import { PortalEmptyState } from "./portal-empty-state";
 import { PortalRow } from "./portal-row";
 import type { Portal } from "./portals-data";
-import { portals } from "./portals-data";
 
 export function PortalTabs({
 	onSelectPortal,
+	portals,
 	selectedPortal,
 }: {
 	onSelectPortal: (portalId: string) => void;
+	portals: Portal[];
 	selectedPortal: Portal | null;
 }) {
 	return (
@@ -19,7 +20,7 @@ export function PortalTabs({
 			<div className="flex justify-center">
 				<TabsList
 					className="w-fit text-muted-foreground/80"
-					variant="underline"
+					variant="line"
 				>
 					<TabsTrigger value="active">Active</TabsTrigger>
 					<TabsTrigger value="archived">Archived</TabsTrigger>
@@ -31,15 +32,25 @@ export function PortalTabs({
 			<TabsContent value="active">
 				<>
 					<main className="min-w-0">
-						<div className="divide-y divide-border/35">
-							{portals.map((portal) => (
-								<PortalRow
-									key={portal.id}
-									onSelect={() => onSelectPortal(portal.id)}
-									portal={portal}
-								/>
-							))}
-						</div>
+						{portals.length ? (
+							<div className="divide-y divide-border/35">
+								{portals.map((portal) => (
+									<PortalRow
+										key={portal.id}
+										onSelect={() => onSelectPortal(portal.id)}
+										portal={portal}
+									/>
+								))}
+							</div>
+						) : (
+							<PortalEmptyState
+								action="Create portal"
+								description="Client-facing workspaces will appear here after a project has a portal record."
+								icon={PanelsTopLeftIcon}
+								secondaryAction="View templates"
+								title="No active portals yet"
+							/>
+						)}
 					</main>
 
 					<PortalDetailsSheet

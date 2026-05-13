@@ -10,8 +10,9 @@ import { InsightsAndSignals } from "./insights-and-signals";
 import { LiveActivityFeed } from "./live-activity-feed";
 import { MomentumSignals } from "./momentum-signals";
 import { PortalPerformanceTable } from "./portal-performance-table";
+import type { AnalyticsData } from "./analytics-data";
 
-export function AnalyticsPage() {
+export function AnalyticsPage({ data }: { data: AnalyticsData }) {
 	const [project, setProject] = useState("all");
 	const [range, setRange] = useState("7d");
 	const [compare, setCompare] = useState("previous");
@@ -26,15 +27,15 @@ export function AnalyticsPage() {
 				project={project}
 				range={range}
 			/>
-			<InlineMetrics />
+			<InlineMetrics metrics={data.metrics} />
 			<section className="grid gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
-				<EngagementTimeline />
-				<LiveActivityFeed />
+				<EngagementTimeline data={data.timelineData} events={data.timelineEvents} />
+				<LiveActivityFeed activityFeed={data.activityFeed} />
 			</section>
-			<PortalPerformanceTable project={project} />
-			<InsightsAndSignals />
-			<ApprovalFunnel />
-			<MomentumSignals />
+			<PortalPerformanceTable portalPerformance={data.portalPerformance} project={project} />
+			<InsightsAndSignals bottlenecks={data.bottlenecks} insights={data.insights} />
+			<ApprovalFunnel funnel={data.funnel} />
+			<MomentumSignals momentum={data.momentum} />
 		</div>
 	);
 }

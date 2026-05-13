@@ -71,7 +71,6 @@ export function ProjectStep({
             onChange={(event) => onCustomNameChange(event.target.value)}
             placeholder="Name your project"
             maxLength={48}
-            size="lg"
           />
         </div>
       ) : null}

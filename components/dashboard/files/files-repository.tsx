@@ -30,6 +30,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
@@ -41,159 +42,11 @@ import {
 	SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import type { MissingFile, RepositoryFile } from "@/lib/app-data";
 
-type FileStatus =
-	| "Ready"
-	| "Needs approval"
-	| "Awaiting review"
-	| "Missing feedback"
-	| "Shared"
-	| "Not shared"
-	| "Archived";
-
-type RepositoryFile = {
-	id: string;
-	name: string;
-	type: "Assets" | "Design" | "Copy" | "Handoff" | "Contract";
-	format: "ZIP" | "PNG" | "PDF" | "DOCX";
-	size: string;
-	status: FileStatus;
-	shared: "Shared" | "Not shared";
-	updated: string;
-	owner: string;
-	uploadedBy: string;
-	usedIn: string[];
-	activity: string[];
-	pinned?: boolean;
-};
-
-type MissingFile = {
-	id: string;
-	name: string;
-	neededFor: string;
-	due: string;
-	requestState: string;
-};
-
-const files: RepositoryFile[] = [
-	{
-		id: "brand-guidelines",
-		name: "Brand Guidelines.pdf",
-		type: "Assets",
-		format: "PDF",
-		size: "8.4 MB",
-		status: "Shared",
-		shared: "Shared",
-		updated: "May 8",
-		owner: "Jordan",
-		uploadedBy: "Jordan Ellis",
-		usedIn: ["Brand Portal", "Homepage Redesign"],
-		activity: ["Uploaded by Jordan", "Shared by Connor", "Viewed by client"],
-		pinned: true,
-	},
-	{
-		id: "homepage-preview",
-		name: "Homepage Preview.png",
-		type: "Design",
-		format: "PNG",
-		size: "3.1 MB",
-		status: "Needs approval",
-		shared: "Shared",
-		updated: "May 7",
-		owner: "Connor",
-		uploadedBy: "Connor Love",
-		usedIn: ["Homepage Redesign"],
-		activity: ["Uploaded by Connor", "Shared with client", "Client opened preview"],
-		pinned: true,
-	},
-	{
-		id: "brand-assets",
-		name: "Brand assets.zip",
-		type: "Assets",
-		format: "ZIP",
-		size: "24 MB",
-		status: "Awaiting review",
-		shared: "Shared",
-		updated: "2h ago",
-		owner: "Jordan",
-		uploadedBy: "Jordan Ellis",
-		usedIn: ["Brand Portal", "Homepage Redesign"],
-		activity: ["Uploaded by Jordan", "Shared by Connor", "Downloaded by client"],
-	},
-	{
-		id: "copy-deck",
-		name: "Copy deck.pdf",
-		type: "Copy",
-		format: "PDF",
-		size: "1.6 MB",
-		status: "Missing feedback",
-		shared: "Not shared",
-		updated: "Yesterday",
-		owner: "Maya",
-		uploadedBy: "Maya Chen",
-		usedIn: ["Services Page"],
-		activity: ["Uploaded by Maya", "Internal review requested"],
-	},
-	{
-		id: "launch-checklist",
-		name: "Launch checklist.pdf",
-		type: "Handoff",
-		format: "PDF",
-		size: "924 KB",
-		status: "Ready",
-		shared: "Shared",
-		updated: "May 5",
-		owner: "Connor",
-		uploadedBy: "Connor Love",
-		usedIn: ["Launch Handoff"],
-		activity: ["Uploaded by Connor", "Shared with client"],
-	},
-	{
-		id: "msa",
-		name: "Signed MSA.docx",
-		type: "Contract",
-		format: "DOCX",
-		size: "438 KB",
-		status: "Archived",
-		shared: "Shared",
-		updated: "Apr 29",
-		owner: "Maya",
-		uploadedBy: "Maya Chen",
-		usedIn: ["Client Onboarding"],
-		activity: ["Uploaded by Maya", "Archived by Connor"],
-	},
-];
-
-const missingFiles: MissingFile[] = [
-	{
-		id: "logo-exports",
-		name: "Logo exports",
-		neededFor: "Brand Portal",
-		due: "Friday",
-		requestState: "Request sent 3 days ago",
-	},
-	{
-		id: "product-photography",
-		name: "Product photography",
-		neededFor: "Services Page",
-		due: "Monday",
-		requestState: "Not requested yet",
-	},
-	{
-		id: "team-bios",
-		name: "Team bios",
-		neededFor: "About Page",
-		due: "May 15",
-		requestState: "Waiting on Maya",
-	},
-];
-
-const typeOptions = ["All types", ...Array.from(new Set(files.map((file) => file.type)))];
-const statusOptions = ["All statuses", ...Array.from(new Set(files.map((file) => file.status)))];
-const ownerOptions = ["Anyone", ...Array.from(new Set(files.map((file) => file.owner)))];
 const dateOptions = ["Any date", "Today", "This week", "This month"];
 
-const statusClassMap: Record<FileStatus, string> = {
+const statusClassMap: Record<RepositoryFile["status"], string> = {
 	Ready: "text-success-foreground",
 	"Needs approval": "text-warning-foreground",
 	"Awaiting review": "text-info-foreground",
@@ -210,7 +63,13 @@ const iconMap: Record<RepositoryFile["format"], LucideIcon> = {
 	ZIP: FileArchiveIcon,
 };
 
-export function FilesRepository() {
+export function FilesRepository({
+	files,
+	missingFiles,
+}: {
+	files: RepositoryFile[];
+	missingFiles: MissingFile[];
+}) {
 	const [query, setQuery] = useState("");
 	const [type, setType] = useState("All types");
 	const [status, setStatus] = useState("All statuses");
@@ -220,6 +79,9 @@ export function FilesRepository() {
 	const [pinnedFileIds, setPinnedFileIds] = useState<string[]>(() =>
 		files.filter((file) => file.pinned).map((file) => file.id)
 	);
+	const typeOptions = useMemo(() => ["All types", ...Array.from(new Set(files.map((file) => file.type)))], [files]);
+	const statusOptions = useMemo(() => ["All statuses", ...Array.from(new Set(files.map((file) => file.status)))], [files]);
+	const ownerOptions = useMemo(() => ["Anyone", ...Array.from(new Set(files.map((file) => file.owner)))], [files]);
 
 	const visibleFiles = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -236,9 +98,9 @@ export function FilesRepository() {
 			const matchesOwner = owner === "Anyone" || file.owner === owner;
 			const matchesDate =
 				date === "Any date" ||
-				(date === "Today" && file.updated.includes("h ago")) ||
-				(date === "This week" && ["2h ago", "Yesterday", "May 8", "May 7", "May 5"].includes(file.updated)) ||
-				(date === "This month" && !file.updated.includes("Apr"));
+				(date === "Today" && (file.updated.includes("m ago") || file.updated.includes("h ago") || file.updated === "Just now")) ||
+				(date === "This week" && !file.updated.includes(",")) ||
+				date === "This month";
 
 			return matchesQuery && matchesType && matchesStatus && matchesOwner && matchesDate;
 		});
@@ -343,19 +205,25 @@ function FilterSelect({
 	options: string[];
 	value: string;
 }) {
+	const items = options.map((option) => ({ label: option, value: option }));
+
 	return (
-		<Select onValueChange={onChange} value={value}>
-			<SelectTrigger aria-label={label} className="lg:w-36">
-				<SelectValue>{value}</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				{options.map((option) => (
-					<SelectItem key={option} value={option}>
-						{option}
-					</SelectItem>
-				))}
-			</SelectContent>
-		</Select>
+		<Field className="lg:w-36">
+			<Select items={items} onValueChange={(nextValue) => nextValue != null && onChange(nextValue)} value={value}>
+				<SelectTrigger aria-label={label} className="w-full">
+					<SelectValue />
+				</SelectTrigger>
+				<SelectContent alignItemWithTrigger={false}>
+					<SelectGroup>
+						{items.map((item) => (
+							<SelectItem key={item.value} value={item.value}>
+								{item.label}
+							</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
+		</Field>
 	);
 }
 

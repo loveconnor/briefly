@@ -1,6 +1,7 @@
 import { MessageCircleIcon, UploadIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant } from "@/components/dashboard/badge-tone";
 import { cn } from "@/lib/utils";
 import { TemplateSectionIntro } from "./template-section-intro";
 import type { ClientPortalPreviewItem, TemplateSystem } from "./templates-data";
@@ -31,7 +32,9 @@ export function PortalPreviewTab({ template }: { template: TemplateSystem }) {
 								Client workspace preview
 							</div>
 						</div>
-						<Badge variant="success">Portal enabled</Badge>
+						<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>
+							Portal enabled
+						</Badge>
 					</div>
 					<div className="mb-4 grid gap-2 sm:grid-cols-3">
 						<div className="rounded-md bg-background px-3 py-2 shadow-xs">
@@ -42,20 +45,11 @@ export function PortalPreviewTab({ template }: { template: TemplateSystem }) {
 						</div>
 						<div className="rounded-md bg-background px-3 py-2 shadow-xs">
 							<div className="text-xs text-muted-foreground">Latest update</div>
-							<div className="mt-1 text-sm font-medium">Today, 9:42 AM</div>
+							<div className="mt-1 text-sm font-medium">Not sent yet</div>
 						</div>
 						<div className="rounded-md bg-background px-3 py-2 shadow-xs">
 							<div className="text-xs text-muted-foreground">Client team</div>
-							<div className="mt-1 flex -space-x-1">
-								{["CL", "AM", "DR"].map((initials) => (
-									<span
-										className="flex size-6 items-center justify-center rounded-full bg-muted text-[0.65rem] font-medium ring-2 ring-background"
-										key={initials}
-									>
-										{initials}
-									</span>
-								))}
-							</div>
+							<div className="mt-1 text-sm font-medium">Added per project</div>
 						</div>
 					</div>
 					<div className="space-y-2">
@@ -69,7 +63,7 @@ export function PortalPreviewTab({ template }: { template: TemplateSystem }) {
 										{item.type}
 									</span>
 									<span className="text-xs text-muted-foreground">
-										{index === 0 ? "2 comments" : item.status}
+										{item.status}
 									</span>
 								</div>
 								<div className="mt-2 flex items-center justify-between gap-3">
@@ -82,7 +76,7 @@ export function PortalPreviewTab({ template }: { template: TemplateSystem }) {
 								</div>
 								<div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
 									<MessageCircleIcon className="size-3.5" />
-									<span>{index === 0 ? "Connor requested feedback" : "Client visible"}</span>
+									<span>Client visible</span>
 								</div>
 							</div>
 						))}

@@ -4,6 +4,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { TeamPage } from "@/components/dashboard/team/team-page";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getTeamData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -31,6 +32,8 @@ export default async function DashboardTeamPage() {
 		return <OnboardingFlow />;
 	}
 
+	const team = await getTeamData(session.user);
+
 	return (
 		<AppShell
 			user={{
@@ -39,7 +42,7 @@ export default async function DashboardTeamPage() {
 				image: session.user.image,
 			}}
 		>
-			<TeamPage />
+			<TeamPage data={team} />
 		</AppShell>
 	);
 }

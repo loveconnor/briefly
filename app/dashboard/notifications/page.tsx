@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import NotificationsDataTable, { Notification } from "@/components/dashboard/notifications/data-table";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getNotifications } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
-
-import notifications from "@/components/dashboard/notifications/data.json";
 
 export async function generateMetadata() {
   return generateMeta({
@@ -37,6 +36,8 @@ export default async function Page() {
   if (!onboarding.completed) {
     return <OnboardingFlow />;
   }
+
+  const notifications = await getNotifications(session.user.id);
 
   return (
     <AppShell

@@ -5,6 +5,7 @@ import { AnalyticsPage } from "@/components/dashboard/analytics/analytics-page";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getAnalyticsData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -32,6 +33,8 @@ export default async function Page() {
 		return <OnboardingFlow />;
 	}
 
+	const analytics = await getAnalyticsData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -40,7 +43,7 @@ export default async function Page() {
 				image: session.user.image,
 			}}
 		>
-			<AnalyticsPage />
+			<AnalyticsPage data={analytics} />
 		</AppShell>
 	);
 }

@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
+import type { AutomationsData } from "@/lib/app-data";
 
-import { templates } from "./automations-data";
-
-export function AutomationTemplates() {
+export function AutomationTemplates({
+	templates,
+}: {
+	templates: AutomationsData["templates"];
+}) {
 	return (
 		<section className="space-y-3 pt-2 opacity-80">
 			<div className="flex items-center justify-between gap-3">
@@ -25,6 +28,9 @@ export function AutomationTemplates() {
 						</button>
 					);
 				})}
+				{templates.length === 0 ? (
+					<p className="text-sm text-muted-foreground">No automation templates saved.</p>
+				) : null}
 			</div>
 		</section>
 	);

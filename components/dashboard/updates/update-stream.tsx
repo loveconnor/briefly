@@ -76,7 +76,7 @@ function UpdateStreamItem({
 					<h3 className="text-[17px] font-semibold leading-6 text-foreground">
 						{update.title}
 					</h3>
-					<Badge className="border-border/60 bg-transparent tracking-normal" size="sm" variant="outline">
+					<Badge className="border-border/60 bg-transparent tracking-normal" variant="outline">
 						{formatUpdateType(update.type)}
 					</Badge>
 				</div>

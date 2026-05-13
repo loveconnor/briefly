@@ -4,10 +4,16 @@ import { useState } from "react";
 import { ChevronDownIcon, Clock3Icon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { bottlenecks, insights } from "./analytics-data";
+import type { AnalyticsData } from "./analytics-data";
 
-export function InsightsAndSignals() {
-	const [expandedInsight, setExpandedInsight] = useState("Most engaged client");
+export function InsightsAndSignals({
+	bottlenecks,
+	insights,
+}: {
+	bottlenecks: AnalyticsData["bottlenecks"];
+	insights: AnalyticsData["insights"];
+}) {
+	const [expandedInsight, setExpandedInsight] = useState(insights[0]?.label ?? "");
 
 	return (
 		<section className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]">
@@ -45,6 +51,9 @@ export function InsightsAndSignals() {
 							</button>
 						);
 					})}
+					{insights.length === 0 ? (
+						<p className="py-5 text-sm text-muted-foreground">No interaction insights yet.</p>
+					) : null}
 				</div>
 			</div>
 
@@ -71,6 +80,9 @@ export function InsightsAndSignals() {
 							</div>
 						</div>
 					))}
+					{bottlenecks.length === 0 ? (
+						<p className="py-5 text-sm text-muted-foreground">No attention signals recorded.</p>
+					) : null}
 				</div>
 			</div>
 		</section>

@@ -8,7 +8,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@/components/ui/tabs";
-import { colorPresets, recentColors } from "./workspace-data";
+import type { WorkspaceData } from "./workspace-data";
 import {
 	ColorRow,
 	PlainValue,
@@ -18,11 +18,16 @@ import {
 
 export function BrandingPage({
 	accentColor,
+	data,
 	onAccentColorChange,
 }: {
 	accentColor: string;
+	data: WorkspaceData;
 	onAccentColorChange: (color: string) => void;
 }) {
+	const colorPresets = data.colorPresets;
+	const recentColors = data.recentColors;
+
 	return (
 		<div className="grid gap-12 xl:grid-cols-[minmax(0,0.95fr)_minmax(25rem,0.8fr)]">
 			<div className="space-y-12">
@@ -31,7 +36,7 @@ export function BrandingPage({
 					title="Workspace identity"
 				>
 					<SettingRow
-						action={<PlainValue>Brightline Studio</PlainValue>}
+						action={<PlainValue>{data.businessName}</PlainValue>}
 						description="Shown to team members and clients."
 						label="Workspace name"
 					/>
@@ -41,7 +46,7 @@ export function BrandingPage({
 								<UploadIcon /> Upload new
 							</Button>
 						}
-						description="Current upload: logo.svg"
+						description={data.logoDataUrl ? "Logo uploaded" : "No logo uploaded"}
 						label="Logo"
 					/>
 					<SettingRow
@@ -116,12 +121,18 @@ export function BrandingPage({
 				</SettingsSection>
 			</div>
 
-			<LivePreview accentColor={accentColor} />
+			<LivePreview accentColor={accentColor} workspaceName={data.businessName} />
 		</div>
 	);
 }
 
-function LivePreview({ accentColor }: { accentColor: string }) {
+function LivePreview({
+	accentColor,
+	workspaceName,
+}: {
+	accentColor: string;
+	workspaceName: string;
+}) {
 	return (
 		<section className="xl:sticky xl:top-24 xl:self-start">
 			<div className="mb-4 flex items-center gap-2 text-sm font-medium">
@@ -129,7 +140,7 @@ function LivePreview({ accentColor }: { accentColor: string }) {
 				Live preview
 			</div>
 			<Tabs className="gap-5" defaultValue="portal">
-				<TabsList variant="underline">
+				<TabsList variant="line">
 					<TabsTrigger value="portal">Portal</TabsTrigger>
 					<TabsTrigger value="emails">Emails</TabsTrigger>
 					<TabsTrigger value="invoices">Invoices</TabsTrigger>
@@ -137,12 +148,12 @@ function LivePreview({ accentColor }: { accentColor: string }) {
 				</TabsList>
 				<div className="rounded-lg border bg-background p-5 shadow-xs">
 					<TabsContent value="portal">
-						<PreviewShell accentColor={accentColor} eyebrow="Client portal">
+						<PreviewShell accentColor={accentColor} eyebrow="Client portal" workspaceName={workspaceName}>
 							<div className="flex items-center justify-between">
 								<div>
-									<p className="text-lg font-semibold">Acme Website Sprint</p>
+									<p className="text-lg font-semibold">{workspaceName}</p>
 									<p className="text-sm text-muted-foreground">
-										Two approvals waiting for review
+										Client portal preview
 									</p>
 								</div>
 								<span
@@ -160,7 +171,7 @@ function LivePreview({ accentColor }: { accentColor: string }) {
 						</PreviewShell>
 					</TabsContent>
 					<TabsContent value="emails">
-						<PreviewShell accentColor={accentColor} eyebrow="Update email">
+						<PreviewShell accentColor={accentColor} eyebrow="Update email" workspaceName={workspaceName}>
 							<p className="text-lg font-semibold">Weekly progress is ready</p>
 							<p className="mt-2 text-sm leading-6 text-muted-foreground">
 								A concise client update with branded actions and delivery context.
@@ -172,13 +183,13 @@ function LivePreview({ accentColor }: { accentColor: string }) {
 						</PreviewShell>
 					</TabsContent>
 					<TabsContent value="invoices">
-						<PreviewShell accentColor={accentColor} eyebrow="Invoice">
+						<PreviewShell accentColor={accentColor} eyebrow="Invoice" workspaceName={workspaceName}>
 							<div className="flex items-end justify-between">
 								<div>
-									<p className="text-lg font-semibold">Invoice #1048</p>
-									<p className="text-sm text-muted-foreground">Due May 24</p>
+									<p className="text-lg font-semibold">Invoice preview</p>
+									<p className="text-sm text-muted-foreground">Due date appears here</p>
 								</div>
-								<p className="text-2xl font-semibold">$4,800</p>
+								<p className="text-2xl font-semibold">$0</p>
 							</div>
 							<div className="mt-8 h-1.5 rounded-full bg-muted">
 								<div
@@ -189,7 +200,7 @@ function LivePreview({ accentColor }: { accentColor: string }) {
 						</PreviewShell>
 					</TabsContent>
 					<TabsContent value="approvals">
-						<PreviewShell accentColor={accentColor} eyebrow="Approval screen">
+						<PreviewShell accentColor={accentColor} eyebrow="Approval screen" workspaceName={workspaceName}>
 							<p className="text-lg font-semibold">Homepage direction</p>
 							<p className="mt-2 text-sm leading-6 text-muted-foreground">
 								Approve the latest visual direction or request focused changes.
@@ -213,10 +224,12 @@ function PreviewShell({
 	accentColor,
 	eyebrow,
 	children,
+	workspaceName = "Workspace",
 }: {
 	accentColor: string;
 	eyebrow: string;
 	children: React.ReactNode;
+	workspaceName?: string;
 }) {
 	return (
 		<div className="min-h-80 rounded-md bg-muted/50 p-4">
@@ -229,7 +242,7 @@ function PreviewShell({
 						B
 					</div>
 					<div>
-						<p className="text-sm font-medium">Brightline Studio</p>
+						<p className="text-sm font-medium">{workspaceName}</p>
 						<p className="text-xs text-muted-foreground">{eyebrow}</p>
 					</div>
 				</div>

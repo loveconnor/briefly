@@ -21,6 +21,7 @@ function AutocompleteInput({
   size?: "sm" | "default" | "lg" | number
 }) {
   const sizeValue = (size ?? "default") as "sm" | "default" | "lg" | number
+  const nativeInputSize = typeof sizeValue === "number" ? sizeValue : undefined
 
   return (
     <div className="relative w-full">
@@ -32,7 +33,12 @@ function AutocompleteInput({
             : "has-[+[data-slot=autocomplete-trigger],+[data-slot=autocomplete-clear]]:*:data-[slot=autocomplete-input]:pe-7",
           className
         )}
-        render={<Input size={sizeValue} />}
+        render={
+          <Input
+            data-size={typeof sizeValue === "number" ? undefined : sizeValue}
+            size={nativeInputSize}
+          />
+        }
         {...props}
       />
       {showTrigger && (

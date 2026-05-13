@@ -11,10 +11,10 @@ import { OwnershipSection } from "@/components/dashboard/team/ownership-section"
 import { RoleSheet } from "@/components/dashboard/team/role-sheet";
 import { RolesSection } from "@/components/dashboard/team/roles-section";
 import { SummaryStrip } from "@/components/dashboard/team/summary-strip";
-import { invitations, members, roles } from "@/components/dashboard/team/team-data";
 import type { Member, Role, TeamFilter } from "@/components/dashboard/team/team-types";
+import type { TeamData } from "@/lib/app-data";
 
-export function TeamPage() {
+export function TeamPage({ data }: { data: TeamData }) {
 	const [query, setQuery] = useState("");
 	const [filter, setFilter] = useState<TeamFilter>("All");
 	const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -24,7 +24,7 @@ export function TeamPage() {
 	const visibleMembers = useMemo(() => {
 		const normalized = query.trim().toLowerCase();
 
-		return members.filter((member) => {
+		return data.members.filter((member) => {
 			const matchesQuery =
 				!normalized ||
 				member.name.toLowerCase().includes(normalized) ||
@@ -37,7 +37,7 @@ export function TeamPage() {
 
 			return matchesQuery && matchesFilter;
 		});
-	}, [filter, query]);
+	}, [data.members, filter, query]);
 
 	return (
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
@@ -54,7 +54,7 @@ export function TeamPage() {
 				</Button>
 			</header>
 
-			<SummaryStrip />
+			<SummaryStrip stats={data.summary} />
 
 			<MembersSection
 				filter={filter}
@@ -66,15 +66,24 @@ export function TeamPage() {
 			/>
 
 			<section className="grid gap-14 lg:grid-cols-[1fr_.9fr]">
-				<RolesSection onRoleOpen={setSelectedRole} roles={roles} />
-				<InvitationsSection invitations={invitations} />
+				<RolesSection onRoleOpen={setSelectedRole} roles={data.roles} />
+				<InvitationsSection invitations={data.invitations} />
 			</section>
 
 			<OwnershipSection />
 
-			<MemberSheet member={selectedMember} onClose={() => setSelectedMember(null)} />
+			<MemberSheet
+				member={selectedMember}
+				onClose={() => setSelectedMember(null)}
+				roles={data.roles}
+			/>
 			<RoleSheet role={selectedRole} onClose={() => setSelectedRole(null)} />
-			<InviteDialog onOpenChange={setInviteOpen} open={inviteOpen} />
+			<InviteDialog
+				onOpenChange={setInviteOpen}
+				open={inviteOpen}
+				projectOptions={data.projectOptions}
+				roles={data.roles}
+			/>
 		</div>
 	);
 }

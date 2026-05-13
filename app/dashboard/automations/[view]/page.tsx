@@ -9,6 +9,7 @@ import { AutomationsPage } from "@/components/dashboard/automations/automations-
 import { AppShell } from "@/components/dashboard/app-shell";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { auth } from "@/lib/auth";
+import { getAutomationsData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { generateMeta } from "@/lib/utils";
 
@@ -56,6 +57,8 @@ export default async function Page({ params }: PageProps) {
 		notFound();
 	}
 
+	const automations = await getAutomationsData(session.user.id);
+
 	return (
 		<AppShell
 			user={{
@@ -65,6 +68,7 @@ export default async function Page({ params }: PageProps) {
 			}}
 		>
 			<AutomationsPage
+				data={automations}
 				initialFilter={isPaused ? "paused" : (view as AutomationCategory)}
 			/>
 		</AppShell>

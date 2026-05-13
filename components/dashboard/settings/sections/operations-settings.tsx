@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { badgeToneClassName, badgeToneVariant } from "@/components/dashboard/badge-tone";
 import { Button } from "@/components/ui/button";
 import {
 	OptionSetting,
@@ -94,7 +95,7 @@ export function BillingSettings({ onOpenSheet }: { onOpenSheet: SheetHandler }) 
 				<SettingRow
 					title="Payout account"
 					value="Stripe connected"
-					status={<Badge variant="success">Connected</Badge>}
+					status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Connected</Badge>}
 				>
 					<Button size="sm" variant="outline">
 						Manage
@@ -103,7 +104,7 @@ export function BillingSettings({ onOpenSheet }: { onOpenSheet: SheetHandler }) 
 				<SettingRow
 					title="Tax info"
 					value="W-9 verified"
-					status={<Badge variant="success">Verified</Badge>}
+					status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Verified</Badge>}
 				/>
 			</SettingsSection>
 			<SettingsSection title="Invoices">
@@ -192,7 +193,7 @@ export function IntegrationSettings() {
 				title="Stripe"
 				description="Handles invoices, payouts, and client payment methods."
 				value="Last payout Friday"
-				status={<Badge variant="success">Connected</Badge>}
+				status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Connected</Badge>}
 			>
 				<Button size="sm" variant="ghost">
 					Manage connection
@@ -202,13 +203,13 @@ export function IntegrationSettings() {
 				title="Slack"
 				description="Routes project and approval notifications."
 				value="#project-ops"
-				status={<Badge variant="success">Connected</Badge>}
+				status={<Badge className={badgeToneClassName("success")} variant={badgeToneVariant("success")}>Connected</Badge>}
 			/>
 			<SettingRow
 				title="Google Drive"
 				description="Syncs approved deliverables and shared files."
 				value="Needs reauthorization"
-				status={<Badge variant="warning">Attention</Badge>}
+				status={<Badge className={badgeToneClassName("warning")} variant={badgeToneVariant("warning")}>Attention</Badge>}
 			/>
 		</SettingsSection>
 	);

@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { generateMeta } from "@/lib/utils";
 import { auth } from "@/lib/auth";
+import { getOverviewData } from "@/lib/app-data";
 import { getOnboardingStatus } from "@/lib/onboarding";
 import { OnboardingFlow } from "@/components/onboarding/onboarding-flow";
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -39,6 +40,8 @@ export default async function Page() {
     return <OnboardingFlow />;
   }
 
+  const overview = await getOverviewData(session.user);
+
   return (
     <AppShell
       user={{
@@ -55,17 +58,17 @@ export default async function Page() {
       </div>
 
       <div className="space-y-8">
-        <SummaryCards />
+        <SummaryCards summary={overview.summary} />
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <RecentActivity />
+            <RecentActivity activity={overview.recentActivity} />
           </div>
-          <NeedsAttention />
+          <NeedsAttention items={overview.attentionItems} />
         </div>
-        <TableRecentProjects />
+        <TableRecentProjects data={overview.projects} />
         <div className="grid gap-8 xl:grid-cols-2">
-          <UpcomingDeliverables />
-          <RecentUpdates />
+          <UpcomingDeliverables deliverables={overview.deliverables} />
+          <RecentUpdates updates={overview.recentUpdates} />
         </div>
       </div>
     </AppShell>

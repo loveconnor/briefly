@@ -1,33 +1,18 @@
 import { BriefcaseBusiness, ClipboardCheck, MessageSquareWarning, SendHorizontal } from "lucide-react";
+import type { OverviewData } from "@/lib/app-data";
 
-const summary = [
-  {
-    icon: BriefcaseBusiness,
-    value: "8",
-    label: "active projects"
-  },
-  {
-    icon: ClipboardCheck,
-    value: "5",
-    label: "approvals pending"
-  },
-  {
-    icon: MessageSquareWarning,
-    value: "3",
-    label: "client blockers"
-  },
-  {
-    icon: SendHorizontal,
-    value: "12",
-    label: "updates sent this week"
-  }
-];
+const iconMap = {
+  approvals: ClipboardCheck,
+  blockers: MessageSquareWarning,
+  projects: BriefcaseBusiness,
+  updates: SendHorizontal,
+};
 
-export function SummaryCards() {
+export function SummaryCards({ summary }: { summary: OverviewData["summary"] }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {summary.map((item) => {
-        const Icon = item.icon;
+        const Icon = iconMap[item.icon];
 
         return (
           <div key={item.label} className="flex items-center gap-3">

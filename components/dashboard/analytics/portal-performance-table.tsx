@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import {
-	portalPerformance,
+	type PortalPerformance,
 	type PortalStatus,
 	type SortKey,
 } from "./analytics-data";
@@ -57,7 +57,13 @@ function SortButton({
 	);
 }
 
-export function PortalPerformanceTable({ project }: { project: string }) {
+export function PortalPerformanceTable({
+	portalPerformance,
+	project,
+}: {
+	portalPerformance: PortalPerformance[];
+	project: string;
+}) {
 	const router = useRouter();
 	const [sortKey, setSortKey] = useState<SortKey>("lastActivity");
 	const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
