@@ -9,6 +9,7 @@ import {
 	WebhookIcon,
 } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -180,7 +181,7 @@ export function ApiPage({
 						);
 					})}
 					{keys.length === 0 ? (
-						<div className="py-5 text-sm text-muted-foreground">No API keys created yet.</div>
+						<DashboardEmptyState className="my-5" icon={KeyRoundIcon} title="No API keys created yet" />
 					) : null}
 				</div>
 			</section>
@@ -212,7 +213,11 @@ export function ApiPage({
 						</button>
 					))}
 					{webhookRows.length === 0 ? (
-						<div className="py-5 text-sm text-muted-foreground">No webhook endpoints configured.</div>
+						<DashboardEmptyState
+							className="my-5"
+							icon={WebhookIcon}
+							title="No webhook endpoints configured"
+						/>
 					) : null}
 				</div>
 				<div className="mt-6 flex items-start gap-3 text-sm text-muted-foreground">

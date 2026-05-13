@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -166,7 +167,7 @@ function ContextPanel({ project }: { project: Project }) {
 								</div>
 							))
 						) : (
-							<div className="text-sm text-muted-foreground">No active blockers.</div>
+							<DashboardEmptyState className="min-h-20" title="No active blockers" />
 						)}
 					</div>
 				</div>

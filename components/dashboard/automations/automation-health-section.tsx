@@ -1,3 +1,4 @@
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { AutomationsData, Automation } from "@/lib/app-data";
 import { cn } from "@/lib/utils";
 import { automationIconMap } from "./automation-icons";
@@ -85,7 +86,7 @@ function RecentAutomationActivity({
 					);
 				})}
 				{recentActivity.length === 0 ? (
-					<p className="py-2 text-sm text-muted-foreground">No automation runs recorded yet.</p>
+					<DashboardEmptyState className="my-2" title="No automation runs recorded yet" />
 				) : null}
 			</div>
 		</section>
@@ -136,7 +137,7 @@ function AttentionNeeded({
 					);
 				})}
 				{attentionItems.length === 0 ? (
-					<p className="py-2 text-sm text-muted-foreground">No automation issues recorded.</p>
+					<DashboardEmptyState className="my-2" title="No automation issues recorded" />
 				) : null}
 			</div>
 		</aside>

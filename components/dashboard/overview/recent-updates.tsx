@@ -1,4 +1,6 @@
 import { CheckCircle2, Link2, Send, Share2 } from "lucide-react";
+
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { OverviewUpdate } from "@/lib/app-data";
 
 const iconMap = {
@@ -31,9 +33,7 @@ export function RecentUpdates({ updates }: { updates: OverviewUpdate[] }) {
             </div>
           );
         })}
-        {updates.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No client updates sent yet.</p>
-        ) : null}
+        {updates.length === 0 ? <DashboardEmptyState title="No client updates sent yet" /> : null}
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { ListFilterIcon, SearchIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -80,12 +81,11 @@ export function AutomationRulesSection({
 					/>
 				))}
 				{automations.length === 0 ? (
-					<div className="flex min-h-48 flex-col items-center justify-center px-4 text-center">
-						<p className="font-medium">No automations match this view.</p>
-						<p className="mt-1 max-w-sm text-sm text-muted-foreground">
-							Search by automation name, trigger, action, or project scope.
-						</p>
-					</div>
+					<DashboardEmptyState
+						className="min-h-48"
+						description="Search by automation name, trigger, action, or project scope."
+						title="No automations match this view"
+					/>
 				) : null}
 			</div>
 		</section>

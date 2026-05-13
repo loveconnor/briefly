@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SparklesIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TemplateSystem } from "./templates-data";
@@ -62,9 +63,12 @@ export function TemplateSystemList({
 					<TemplateRow key={template.slug} template={template} />
 				))
 			) : (
-				<div className="rounded-md bg-muted/30 px-4 py-12 text-sm text-muted-foreground">
-					No templates match this search. Create a custom workflow or clear the filters.
-				</div>
+				<DashboardEmptyState
+					className="min-h-40"
+					description="Create a custom workflow or clear the filters."
+					icon={SparklesIcon}
+					title="No templates match this search"
+				/>
 			)}
 		</section>
 	);

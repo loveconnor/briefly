@@ -1,3 +1,4 @@
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import type { AnalyticsData } from "./analytics-data";
 
@@ -11,7 +12,7 @@ export function MomentumSignals({ momentum }: { momentum: AnalyticsData["momentu
 				</div>
 			))}
 			{momentum.length === 0 ? (
-				<p className="text-sm text-muted-foreground">No momentum signals yet.</p>
+				<DashboardEmptyState className="md:col-span-3" title="No momentum signals yet" />
 			) : null}
 		</section>
 	);

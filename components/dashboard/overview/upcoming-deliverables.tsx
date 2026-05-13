@@ -1,4 +1,6 @@
 import { CalendarDays } from "lucide-react";
+
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { OverviewDeliverable } from "@/lib/app-data";
 
 export function UpcomingDeliverables({ deliverables }: { deliverables: OverviewDeliverable[] }) {
@@ -23,7 +25,7 @@ export function UpcomingDeliverables({ deliverables }: { deliverables: OverviewD
           </div>
         ))}
         {deliverables.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No deliverables scheduled yet.</p>
+          <DashboardEmptyState icon={CalendarDays} title="No deliverables scheduled yet" />
         ) : null}
       </div>
     </section>

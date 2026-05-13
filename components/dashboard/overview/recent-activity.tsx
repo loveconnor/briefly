@@ -1,5 +1,6 @@
 import { CheckCircle2, FileUp, GitPullRequestArrow, MessageSquareText, Send } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import type { OverviewActivity } from "@/lib/app-data";
 
@@ -50,9 +51,7 @@ export function RecentActivity({ activity }: { activity: OverviewActivity[] }) {
             </div>
           );
         })}
-        {activity.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
-        ) : null}
+        {activity.length === 0 ? <DashboardEmptyState title="No activity recorded yet" /> : null}
       </div>
     </section>
   );

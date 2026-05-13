@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -159,9 +160,11 @@ export function Requests({
 						})}
 					</div>
 					{visibleRequests.length === 0 ? (
-						<p className="text-muted-foreground py-5 text-sm">
-							No requests match the current search and filters.
-						</p>
+						<DashboardEmptyState
+							className="my-5"
+							description="Adjust the search or filters to include more requests."
+							title="No requests match the current search and filters"
+						/>
 					) : null}
 				</section>
 

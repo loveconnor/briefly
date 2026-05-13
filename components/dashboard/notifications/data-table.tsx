@@ -28,6 +28,7 @@ import {
   ChevronDown
 } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
@@ -441,8 +442,11 @@ export default function NotificationsDataTable({ data }: { data: Notification[] 
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
-                    No results.
+                  <TableCell colSpan={columns.length}>
+                    <DashboardEmptyState
+                      className="my-4"
+                      title="No notifications match the current filters"
+                    />
                   </TableCell>
                 </TableRow>
               )}

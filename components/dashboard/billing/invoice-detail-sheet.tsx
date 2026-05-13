@@ -1,5 +1,6 @@
 import { CopyIcon, DownloadIcon, SendIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,
@@ -62,9 +63,10 @@ function InvoiceDetails({ item }: { item: BillingActivityItem }) {
 							))}
 						</div>
 					) : (
-						<p className="text-sm text-muted-foreground">
-							No line items are attached to this activity.
-						</p>
+						<DashboardEmptyState
+							className="min-h-20"
+							title="No line items are attached to this activity"
+						/>
 					)}
 				</div>
 

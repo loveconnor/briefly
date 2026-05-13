@@ -5,6 +5,8 @@ import {
 	MessageSquareTextIcon,
 	UploadIcon,
 } from "lucide-react";
+
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { AnalyticsData } from "./analytics-data";
 
 const iconMap = {
@@ -48,7 +50,7 @@ export function LiveActivityFeed({
 					);
 				})}
 				{activityFeed.length === 0 ? (
-					<p className="py-3 text-sm text-muted-foreground">No client signals recorded yet.</p>
+					<DashboardEmptyState className="my-3" title="No client signals recorded yet" />
 				) : null}
 			</div>
 		</aside>

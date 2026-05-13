@@ -8,6 +8,7 @@ import {
 	UploadIcon,
 } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import type { PortalData } from "./client-portal-data";
 
@@ -39,7 +40,7 @@ export function TaskList({ data, limit }: { data: PortalData; limit?: number }) 
 				</div>
 			))}
 			{data.tasks.length === 0 ? (
-				<p className="py-3 text-sm text-muted-foreground">No client tasks recorded.</p>
+				<DashboardEmptyState className="my-3" title="No client tasks recorded" />
 			) : null}
 		</div>
 	);
@@ -68,7 +69,7 @@ export function MessageList({ data, limit }: { data: PortalData; limit?: number 
 				</article>
 			))}
 			{data.messages.length === 0 ? (
-				<p className="text-sm text-muted-foreground">No messages recorded.</p>
+				<DashboardEmptyState title="No messages recorded" />
 			) : null}
 		</div>
 	);
@@ -101,7 +102,7 @@ export function FileList({ data, limit }: { data: PortalData; limit?: number }) 
 				</a>
 			))}
 			{data.files.length === 0 ? (
-				<p className="py-3 text-sm text-muted-foreground">No files shared yet.</p>
+				<DashboardEmptyState className="my-3" icon={FileTextIcon} title="No files shared yet" />
 			) : null}
 		</div>
 	);
@@ -127,7 +128,7 @@ export function ActivityList({ data }: { data: PortalData }) {
 				</div>
 			))}
 			{data.activity.length === 0 ? (
-				<p className="py-3 text-sm text-muted-foreground">No portal activity recorded.</p>
+				<DashboardEmptyState className="my-3" title="No portal activity recorded" />
 			) : null}
 		</div>
 	);

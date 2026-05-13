@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -394,7 +395,7 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 								</div>
 							))}
 							{client.portalPages.length === 0 ? (
-								<div className="py-5 text-sm text-muted-foreground">No portal pages recorded.</div>
+								<DashboardEmptyState className="my-5" title="No portal pages recorded" />
 							) : null}
 						</div>
 					</section>
@@ -419,7 +420,11 @@ export function ClientDetail({ client }: { client: ClientRecord }) {
 								</div>
 							))}
 							{client.files.length === 0 ? (
-								<div className="py-5 text-sm text-muted-foreground">No files recorded for this client.</div>
+								<DashboardEmptyState
+									className="my-5"
+									icon={FileTextIcon}
+									title="No files recorded for this client"
+								/>
 							) : null}
 						</div>
 					</section>

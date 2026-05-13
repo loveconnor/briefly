@@ -1,5 +1,6 @@
 import { LinkIcon, ShieldCheckIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import type { Domain } from "./workspace-data";
 import { QuietNote, StatusText } from "./workspace-primitives";
@@ -49,7 +50,7 @@ export function DomainsPage({
 					</div>
 				))}
 				{domains.length === 0 ? (
-					<div className="py-6 text-sm text-muted-foreground">No domains connected yet.</div>
+					<DashboardEmptyState className="my-6" icon={LinkIcon} title="No domains connected yet" />
 				) : null}
 			</div>
 			<QuietNote

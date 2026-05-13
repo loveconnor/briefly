@@ -16,6 +16,7 @@ import {
 } from "@tanstack/react-table";
 
 import { buttonVariants, Button } from "@/components/ui/button";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -275,8 +276,11 @@ export function TableRecentProjects({ data }: { data: Project[] }) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length}>
+                  <DashboardEmptyState
+                    className="my-4"
+                    title="No projects match the current filters"
+                  />
                 </TableCell>
               </TableRow>
             )}

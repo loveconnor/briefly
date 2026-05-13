@@ -1,5 +1,6 @@
 "use client";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -116,9 +117,11 @@ function NotificationsMenu() {
 						</DropdownMenuItem>
 					))}
 					{headerNotifications.length === 0 ? (
-						<div className="px-4 py-6 text-sm text-muted-foreground">
-							No notifications recorded.
-						</div>
+						<DashboardEmptyState
+							className="mx-4 my-4 min-h-20"
+							icon={BellIcon}
+							title="No notifications recorded"
+						/>
 					) : null}
 				</ScrollArea>
 			</DropdownMenuContent>

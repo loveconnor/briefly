@@ -1,6 +1,7 @@
 import { AlertTriangle, CalendarClock, FolderOpenDot, MessageCircleWarning } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import type { OverviewAttentionItem } from "@/lib/app-data";
 
@@ -19,7 +20,10 @@ export function NeedsAttention({ items }: { items: OverviewAttentionItem[] }) {
           <h2 className="font-display text-lg font-medium tracking-tight">Needs Attention</h2>
           <p className="text-muted-foreground mt-1 text-sm">Items most likely to slow delivery.</p>
         </div>
-        <p className="text-sm text-muted-foreground">No blockers or pending decisions recorded.</p>
+        <DashboardEmptyState
+          icon={AlertTriangle}
+          title="No blockers or pending decisions recorded"
+        />
       </section>
     );
   }

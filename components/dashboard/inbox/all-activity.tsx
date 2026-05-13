@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -184,7 +185,10 @@ export function AllActivity({ activityItems }: { activityItems: InboxActivityIte
 						);
 					})}
 					{filteredItems.length === 0 ? (
-						<p className="text-muted-foreground text-sm">No activity matches the current filters.</p>
+						<DashboardEmptyState
+							description="Adjust the search or filter options to broaden the activity view."
+							title="No activity matches the current filters"
+						/>
 					) : null}
 				</div>
 			</section>

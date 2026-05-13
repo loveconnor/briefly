@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone } from "@/components/dashboard/badge-tone";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -112,9 +113,12 @@ export function Approvals({ approvalItems }: { approvalItems: InboxApprovalItem[
 						</article>
 					))}
 					{visibleApprovals.length === 0 ? (
-						<p className="text-muted-foreground py-5 text-sm">
-							No approvals match the current view options.
-						</p>
+						<DashboardEmptyState
+							className="my-5"
+							description="Adjust the view options to include more approvals."
+							icon={CheckCircle2}
+							title="No approvals match the current view options"
+						/>
 					) : null}
 				</section>
 

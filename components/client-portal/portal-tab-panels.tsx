@@ -1,5 +1,6 @@
 import { CheckCircle2Icon, PlusIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import type { PortalData } from "./client-portal-data";
 import { HomepagePreview } from "./homepage-preview";
@@ -66,7 +67,13 @@ export function ReviewTab({
 							</li>
 						))}
 						{data.changes.length === 0 ? (
-							<li className="text-base text-muted-foreground">No revision changes recorded.</li>
+							<li className="list-none">
+								<DashboardEmptyState
+									className="my-3"
+									icon={CheckCircle2Icon}
+									title="No revision changes recorded"
+								/>
+							</li>
 						) : null}
 					</ul>
 				</div>

@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { AutomationsData } from "@/lib/app-data";
 
 export function AutomationTemplates({
@@ -29,7 +30,7 @@ export function AutomationTemplates({
 					);
 				})}
 				{templates.length === 0 ? (
-					<p className="text-sm text-muted-foreground">No automation templates saved.</p>
+					<DashboardEmptyState className="min-h-20 flex-1" title="No automation templates saved" />
 				) : null}
 			</div>
 		</section>

@@ -1,12 +1,14 @@
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { UpdateComposer } from "@/components/dashboard/updates/update-composer";
 
 export function UpdatesEmptyState({ projects = [] }: { projects?: string[] }) {
 	return (
 		<div className="flex min-h-[420px] flex-col items-center justify-center border-t border-border/70 text-center">
-			<h2 className="text-lg font-semibold">No updates yet</h2>
-			<p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-				Project updates, approvals, launches, and follow-ups will appear here once communication begins.
-			</p>
+			<DashboardEmptyState
+				className="border-0"
+				description="Project updates, approvals, launches, and follow-ups will appear here once communication begins."
+				title="No updates yet"
+			/>
 			<div className="mt-5">
 				<UpdateComposer projects={projects} />
 			</div>

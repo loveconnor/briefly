@@ -12,6 +12,7 @@ import {
 	SendIcon,
 } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { buttonVariants } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -104,7 +105,11 @@ function UpdateDetail({ update }: { update: ClientUpdate }) {
 								</button>
 							))
 						) : (
-							<p className="text-sm text-muted-foreground">No attachments were included.</p>
+							<DashboardEmptyState
+								className="min-h-20"
+								icon={FileTextIcon}
+								title="No attachments were included"
+							/>
 						)}
 					</div>
 				</section>
@@ -131,9 +136,11 @@ function UpdateDetail({ update }: { update: ClientUpdate }) {
 							&quot;{update.recentReply}&quot;
 						</blockquote>
 					) : (
-						<p className="mt-3 text-base leading-7 text-muted-foreground">
-							No client reply has been received yet.
-						</p>
+						<DashboardEmptyState
+							className="mt-3 min-h-24"
+							icon={ReplyIcon}
+							title="No client reply has been received yet"
+						/>
 					)}
 					<p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground">
 						<ReplyIcon className="size-4" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { Clock3Icon, MailIcon, SearchIcon } from "lucide-react";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Field } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
@@ -79,13 +80,12 @@ export function MembersSection({
 						/>
 					))
 				) : (
-					<div className="py-12 text-center">
-						<MailIcon className="mx-auto size-8 text-muted-foreground" />
-						<h3 className="mt-3 text-lg font-semibold">No members match this search</h3>
-						<p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-							Try a name, email, project, or access area.
-						</p>
-					</div>
+					<DashboardEmptyState
+						className="my-6 min-h-40"
+						description="Try a name, email, project, or access area."
+						icon={MailIcon}
+						title="No members match this search"
+					/>
 				)}
 			</div>
 		</section>

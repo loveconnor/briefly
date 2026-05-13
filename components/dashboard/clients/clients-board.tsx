@@ -16,6 +16,7 @@ import {
 	Clock3Icon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { badgeToneClassName, badgeToneVariant, type BadgeTone, type BadgeVariant } from "@/components/dashboard/badge-tone";
@@ -354,13 +355,12 @@ export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 					</div>
 				)
 			) : (
-				<div className="border-y py-10 text-center">
-					<MessageSquareTextIcon className="mx-auto size-8 text-muted-foreground" />
-					<h2 className="mt-3 text-lg font-semibold">No clients match this view</h2>
-					<p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-						Adjust search or filters to return relationship status, blockers, and portal activity.
-					</p>
-				</div>
+				<DashboardEmptyState
+					className="min-h-40 border-x-0"
+					description="Adjust search or filters to return relationship status, blockers, and portal activity."
+					icon={MessageSquareTextIcon}
+					title="No clients match this view"
+				/>
 			)}
 
 			<div className="grid gap-8 xl:grid-cols-[1fr_1fr]">

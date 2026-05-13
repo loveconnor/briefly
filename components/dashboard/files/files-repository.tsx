@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import {
@@ -261,7 +262,7 @@ function FileSection({
 					/>
 				))}
 				{sectionFiles.length === 0 ? (
-					<p className="px-2 py-4 text-sm text-muted-foreground">{emptyText}</p>
+					<DashboardEmptyState className="my-4" icon={FileTextIcon} title={emptyText} />
 				) : null}
 			</div>
 		</section>

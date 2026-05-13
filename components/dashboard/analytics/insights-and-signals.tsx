@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDownIcon, Clock3Icon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { cn } from "@/lib/utils";
 import type { AnalyticsData } from "./analytics-data";
 
@@ -52,7 +53,10 @@ export function InsightsAndSignals({
 						);
 					})}
 					{insights.length === 0 ? (
-						<p className="py-5 text-sm text-muted-foreground">No interaction insights yet.</p>
+						<DashboardEmptyState
+							className="my-4"
+							title="No interaction insights yet"
+						/>
 					) : null}
 				</div>
 			</div>
@@ -81,7 +85,11 @@ export function InsightsAndSignals({
 						</div>
 					))}
 					{bottlenecks.length === 0 ? (
-						<p className="py-5 text-sm text-muted-foreground">No attention signals recorded.</p>
+						<DashboardEmptyState
+							className="my-4"
+							icon={Clock3Icon}
+							title="No attention signals recorded"
+						/>
 					) : null}
 				</div>
 			</div>

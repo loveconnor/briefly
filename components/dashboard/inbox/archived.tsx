@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { ArchiveRestore, Clock3, Filter, Search, SlidersHorizontal } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -121,7 +122,11 @@ export function Archived({ archivedItems }: { archivedItems: ArchivedInboxItem[]
 						</div>
 					))}
 					{visibleItems.length === 0 ? (
-						<p className="text-muted-foreground py-5 text-sm">No archived items match the current search and filters.</p>
+						<DashboardEmptyState
+							className="my-5"
+							description="Adjust the search or filters to include more archived items."
+							title="No archived items match the current search and filters"
+						/>
 					) : null}
 				</div>
 			</section>

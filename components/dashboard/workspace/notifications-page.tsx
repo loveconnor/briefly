@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Clock3Icon } from "lucide-react";
 
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -101,7 +102,7 @@ export function NotificationsPage({
 						</div>
 					))}
 					{notificationRows.length === 0 ? (
-						<div className="border-t py-4 text-sm text-muted-foreground">No notification rules configured.</div>
+						<DashboardEmptyState className="my-4" title="No notification rules configured" />
 					) : null}
 				</div>
 			</section>

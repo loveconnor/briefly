@@ -1,3 +1,4 @@
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import type { PortalData } from "./client-portal-data";
 import { StateItem } from "./state-item";
 
@@ -22,7 +23,9 @@ export function SidePanel({ data }: { data: PortalData }) {
 							{member.name} / {member.role}
 						</p>
 					))}
-					{data.team.length === 0 ? <p>No team members recorded.</p> : null}
+					{data.team.length === 0 ? (
+						<DashboardEmptyState className="min-h-20" title="No team members recorded" />
+					) : null}
 				</div>
 			</section>
 		</div>

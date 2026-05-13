@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { BrandLogo } from "./brand-logo";
 import type { Integration, WorkspaceData } from "./workspace-data";
 import { StatusText } from "./workspace-primitives";
@@ -22,7 +23,7 @@ export function IntegrationsPage({
 							<IntegrationRow item={item} key={item.name} onOpen={onOpen} />
 						))}
 					{integrationGroups.flatMap((group) => group.items).filter((item) => item.status === "Connected").length === 0 ? (
-						<div className="py-6 text-sm text-muted-foreground">No connected integrations yet.</div>
+						<DashboardEmptyState className="my-6" title="No connected integrations yet" />
 					) : null}
 				</div>
 			</section>
