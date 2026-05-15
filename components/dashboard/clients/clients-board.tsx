@@ -471,7 +471,7 @@ export function ClientsBoard({ clients }: { clients: ClientRecord[] }) {
 									<div className="min-w-0">
 										<div className="truncate font-semibold">{client.name}</div>
 										<div className="text-sm text-muted-foreground">
-											{client.activeProjects} active projects
+											{client.activeProjects} Active Projects
 										</div>
 									</div>
 								</div>

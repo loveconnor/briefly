@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDownIcon, ChevronLeft, ChevronRight, Ellipsis } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ChevronDownIcon, ChevronLeft, ChevronRight, Ellipsis, Trash2Icon, UserPlusIcon } from "lucide-react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -28,6 +30,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 import {
   Table,
   TableBody,
@@ -155,29 +164,209 @@ export const columns: ColumnDef<Project>[] = [
   {
     id: "actions",
     enableHiding: false,
-    cell: () => {
-      return (
-        <div className="text-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "h-8 w-8 p-0")}
-            >
-              <span className="sr-only">Open menu</span>
-              <Ellipsis className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View Project</DropdownMenuItem>
-              <DropdownMenuItem>Members</DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    }
+    cell: ({ row }) => <ProjectActions project={row.original} />
   }
 ];
+
+function ProjectActions({ project }: { project: Project }) {
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [membersOpen, setMembersOpen] = React.useState(false);
+  const [membersOverride, setMembersOverride] = React.useState<Project["team"] | null>(null);
+  const [memberName, setMemberName] = React.useState("");
+  const [memberRole, setMemberRole] = React.useState("Member");
+  const [memberError, setMemberError] = React.useState("");
+  const [memberPending, setMemberPending] = React.useState(false);
+  const projectHref = `/dashboard/projects/${project.slug}`;
+  const members = membersOverride ?? project.team;
+
+  async function deleteProject() {
+    if (isDeleting) return;
+
+    const confirmed = window.confirm(`Delete ${project.name}? This will remove its tasks, approvals, files, updates, and portal.`);
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(project.slug)}`, {
+        method: "DELETE"
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Unable to delete project.");
+      }
+
+      router.refresh();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Unable to delete project.");
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  async function addMember(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMemberError("");
+    setMemberPending(true);
+
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(project.slug)}/members`, {
+        body: JSON.stringify({
+          name: memberName,
+          role: memberRole,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Unable to add member.");
+      }
+
+      setMembersOverride((current) => [...(current ?? project.team).filter((member) => member.id !== "owner"), payload.member]);
+      setMemberName("");
+      setMemberRole("Member");
+      router.refresh();
+    } catch (error) {
+      setMemberError(error instanceof Error ? error.message : "Unable to add member.");
+    } finally {
+      setMemberPending(false);
+    }
+  }
+
+  async function removeMember(memberId: string) {
+    setMemberError("");
+    setMemberPending(true);
+
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(project.slug)}/members`, {
+        body: JSON.stringify({ memberId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "DELETE",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Unable to remove member.");
+      }
+
+      setMembersOverride((current) => (current ?? project.team).filter((member) => member.id !== memberId));
+      router.refresh();
+    } catch (error) {
+      setMemberError(error instanceof Error ? error.message : "Unable to remove member.");
+    } finally {
+      setMemberPending(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="text-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`More actions for ${project.name}`}
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "h-8 w-8 p-0")}
+          >
+            <span className="sr-only">Open menu</span>
+            <Ellipsis className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href={projectHref} />}>View Project</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setMembersOverride(null);
+                setMembersOpen(true);
+              }}
+            >
+              Members
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={isDeleting} onClick={deleteProject} variant="destructive">
+              {isDeleting ? "Deleting..." : "Delete"}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <Sheet open={membersOpen} onOpenChange={setMembersOpen}>
+        <SheetContent className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Project members</SheetTitle>
+            <SheetDescription>{project.name}</SheetDescription>
+          </SheetHeader>
+          <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-4">
+            <div className="space-y-2">
+              {members.map((member) => (
+                <div className="flex items-center justify-between gap-3 rounded-md border p-3" key={member.id}>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{member.name}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{member.role}</div>
+                  </div>
+                  {member.removable ? (
+                    <Button
+                      aria-label={`Remove ${member.name}`}
+                      disabled={memberPending}
+                      onClick={() => removeMember(member.id)}
+                      size="icon-sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      <Trash2Icon className="size-4 text-destructive" />
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+              {members.length === 0 ? (
+                <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+                  No members assigned yet.
+                </div>
+              ) : null}
+            </div>
+            <form className="space-y-3 border-t pt-4" onSubmit={addMember}>
+              <div className="grid gap-2">
+                <label className="text-xs font-medium text-muted-foreground" htmlFor={`member-name-${project.slug}`}>
+                  Add member
+                </label>
+                <Input
+                  id={`member-name-${project.slug}`}
+                  onChange={(event) => setMemberName(event.target.value)}
+                  placeholder="Name or email"
+                  required
+                  value={memberName}
+                />
+              </div>
+              <div className="grid gap-2">
+                <label className="text-xs font-medium text-muted-foreground" htmlFor={`member-role-${project.slug}`}>
+                  Role
+                </label>
+                <Input
+                  id={`member-role-${project.slug}`}
+                  onChange={(event) => setMemberRole(event.target.value)}
+                  placeholder="Member"
+                  required
+                  value={memberRole}
+                />
+              </div>
+              {memberError ? <p className="text-sm text-destructive">{memberError}</p> : null}
+              <Button disabled={memberPending} type="submit">
+                <UserPlusIcon className="size-4" />
+                {memberPending ? "Saving..." : "Add member"}
+              </Button>
+            </form>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
 
 export function TableRecentProjects({ data }: { data: Project[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);

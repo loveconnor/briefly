@@ -20,7 +20,7 @@ export function SummaryCards({ summary }: { summary: OverviewData["summary"] }) 
         return (
           <Card key={item.label} className="p-6 py-4 shadow-2xs">
             <CardContent className="p-0">
-              <dt className="flex items-center justify-between gap-3 text-sm font-medium lowercase text-muted-foreground">
+              <dt className="flex items-center justify-between gap-3 text-sm font-medium text-muted-foreground">
                 <span>{item.label}</span>
                 <Icon className="size-4 shrink-0" strokeWidth={2.2} />
               </dt>

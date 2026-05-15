@@ -4,17 +4,18 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
+import type { WeeklyActivitySummary } from "@/lib/app-data";
 
-const weeklyActivity = {
+const emptyActivity: WeeklyActivitySummary = {
+	href: "/dashboard/inbox/all-activity",
+	items: [],
 	label: "THIS WEEK",
-	items: ["2 approvals pending", "4 client comments", "1 overdue task"],
-	activityLink: { href: "#/inbox/all-activity", label: "View activity ->" },
-} as const;
+};
 
-export function WeeklyActivityCard() {
+export function WeeklyActivityCard({ activity = emptyActivity }: { activity?: WeeklyActivitySummary }) {
 	const [isOpen, setIsOpen] = useState(true);
 
-	if (!isOpen) {
+	if (!isOpen || activity.items.length === 0) {
 		return null;
 	}
 
@@ -27,10 +28,10 @@ export function WeeklyActivityCard() {
 			)}
 		>
 			<span className="font-light font-mono text-[10px] text-muted-foreground">
-				{weeklyActivity.label}
+				{activity.label}
 			</span>
 			<div className="flex flex-col gap-1">
-				{weeklyActivity.items.map((item) => (
+				{activity.items.map((item) => (
 					<p className="text-xs font-medium leading-4" key={item}>
 						{item}
 					</p>
@@ -42,9 +43,7 @@ export function WeeklyActivityCard() {
 				size="sm"
 				variant="link"
 			>
-				<a href={weeklyActivity.activityLink.href}>
-					{weeklyActivity.activityLink.label}
-				</a>
+				<a href={activity.href}>View activity -&gt;</a>
 			</Button>
 			<Button
 				className="absolute top-2 right-2 z-10 size-6 rounded-full opacity-0 transition-opacity group-hover/weekly-activity-card:opacity-100"

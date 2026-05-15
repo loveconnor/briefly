@@ -14,10 +14,11 @@ import { navGroups } from "@/components/dashboard/app-shared";
 import { WeeklyActivityCard } from "@/components/dashboard/weekly-activity-card";
 import { WorkspaceCommandMenu } from "@/components/dashboard/workspace-command-menu";
 import { cn } from "@/lib/utils";
+import type { WeeklyActivitySummary } from "@/lib/app-data";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 
-export function AppSidebar() {
+export function AppSidebar({ weeklyActivity }: { weeklyActivity?: WeeklyActivitySummary }) {
 	return (
 		<Sidebar collapsible="icon" variant="inset">
 			<SidebarHeader className="h-14 justify-center">
@@ -56,7 +57,7 @@ export function AppSidebar() {
 				))}
 			</SidebarContent>
 			<SidebarFooter>
-				<WeeklyActivityCard />
+				<WeeklyActivityCard activity={weeklyActivity} />
 			</SidebarFooter>
 		</Sidebar>
 	);

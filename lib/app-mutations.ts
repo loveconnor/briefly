@@ -256,6 +256,113 @@ export async function createClientUpdate(
   }
 }
 
+export async function deleteProject(userId: string, slug: string) {
+  await ensureAppDataTables()
+
+  const project = await db.query<{ id: string; name: string }>(
+    `
+      select id, name
+      from app_projects
+      where user_id = $1 and slug = $2
+      limit 1
+    `,
+    [userId, slug],
+  )
+  const row = project.rows[0]
+
+  if (!row) {
+    throw new AppMutationError("Project not found.", 404)
+  }
+
+  const client = await db.connect()
+
+  try {
+    await client.query("begin")
+    await client.query("delete from app_project_members where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_project_tasks where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_project_deliverables where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_project_approvals where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_files where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_activity where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_client_updates where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_portals where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_requests where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_billing_activity where user_id = $1 and project_id = $2", [userId, row.id])
+    await client.query("delete from app_projects where user_id = $1 and id = $2", [userId, row.id])
+    await client.query("commit")
+  } catch (error) {
+    await client.query("rollback")
+    throw error
+  } finally {
+    client.release()
+  }
+
+  return {
+    project: {
+      name: row.name,
+      slug,
+    },
+  }
+}
+
+export async function addProjectMember(
+  userId: string,
+  slug: string,
+  payload: {
+    name?: unknown
+    role?: unknown
+  },
+) {
+  await ensureAppDataTables()
+
+  const project = await getProjectBySlug(userId, slug)
+  const name = requiredString(payload.name, "Member name is required.")
+  const role = optionalString(payload.role) ?? "Member"
+  const id = `project-member:${randomUUID()}`
+
+  await db.query(
+    `
+      insert into app_project_members (
+        id,
+        user_id,
+        project_id,
+        name,
+        role
+      )
+      values ($1, $2, $3, $4, $5)
+    `,
+    [id, userId, project.id, name, role],
+  )
+
+  return {
+    member: {
+      id,
+      name,
+      removable: true,
+      role,
+    },
+  }
+}
+
+export async function removeProjectMember(userId: string, slug: string, memberId: string) {
+  await ensureAppDataTables()
+
+  const project = await getProjectBySlug(userId, slug)
+  const result = await db.query(
+    `
+      delete from app_project_members
+      where user_id = $1 and project_id = $2 and id = $3
+    `,
+    [userId, project.id, memberId],
+  )
+
+  if (!result.rowCount) {
+    throw new AppMutationError("Project member not found.", 404)
+  }
+
+  return { member: { id: memberId } }
+}
+
 export async function createTeamInvitation(
   userId: string,
   payload: {
@@ -576,6 +683,29 @@ async function getProjectByName(userId: string, name: string) {
   )
 
   return result.rows[0] ?? null
+}
+
+async function getProjectBySlug(userId: string, slug: string) {
+  const result = await db.query<{
+    client_id: string | null
+    id: string
+    name: string
+  }>(
+    `
+      select id, name, client_id
+      from app_projects
+      where user_id = $1 and slug = $2
+      limit 1
+    `,
+    [userId, slug],
+  )
+  const project = result.rows[0]
+
+  if (!project) {
+    throw new AppMutationError("Project not found.", 404)
+  }
+
+  return project
 }
 
 async function seedProjectPlan(userId: string, projectId: string, template: string) {

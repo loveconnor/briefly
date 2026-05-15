@@ -4,6 +4,7 @@ export type ActivityTone = "default" | "error" | "info" | "success" | "warning"
 
 export type OverviewProject = {
   id: number
+  slug: string
   name: string
   client: {
     avatar?: string
@@ -13,6 +14,7 @@ export type OverviewProject = {
   waitingOn: string
   status: "active" | "blocked" | "complete" | "review" | "waiting"
   progress: number
+  team: ProjectMember[]
 }
 
 export type OverviewActivity = {
@@ -57,6 +59,12 @@ export type OverviewData = {
   }>
 }
 
+export type WeeklyActivitySummary = {
+  href: string
+  items: string[]
+  label: string
+}
+
 export type ProjectPhase =
   | "Strategy"
   | "Design"
@@ -72,6 +80,7 @@ export type Project = {
   slug: string
   name: string
   client: string
+  clientAvatar?: string | null
   owner: string
   started: string
   timeline: string
@@ -110,10 +119,7 @@ export type Project = {
     since: string
   }>
   clientActivity: string[]
-  team: Array<{
-    name: string
-    role: string
-  }>
+  team: ProjectMember[]
   tasks: Array<{
     title: string
     assignee: string
@@ -166,6 +172,13 @@ export type Project = {
     value: string
     action: string
   }>
+}
+
+export type ProjectMember = {
+  id: string
+  name: string
+  role: string
+  removable: boolean
 }
 
 export type ClientStatus =
@@ -695,6 +708,7 @@ type SessionUser = {
 type ProjectRow = {
   budget_cents: number | null
   budget_used_cents: number | null
+  client_avatar_data_url: string | null
   client_id: string | null
   client_name: string | null
   created_at: Date
@@ -847,6 +861,17 @@ export async function ensureAppDataTables() {
       sort_order integer not null default 0,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
+    )
+  `)
+
+  await db.query(`
+    create table if not exists app_project_members (
+      id text primary key,
+      user_id text not null,
+      project_id text not null,
+      name text not null,
+      role text not null default 'Member',
+      created_at timestamptz not null default now()
     )
   `)
 
@@ -1467,14 +1492,16 @@ export async function getOverviewData(user: SessionUser): Promise<OverviewData> 
     deliverables,
     projects: projects.map((project, index) => ({
       id: index + 1,
+      slug: project.slug,
       name: project.name,
-      client: { name: project.client },
+      client: { avatar: project.clientAvatar ?? undefined, name: project.client },
       phase: project.phase,
       waitingOn: project.blockers[0]?.waitingOn ?? "None",
       status: overviewProjectStatus(project),
       progress: project.deliverablesTotal
         ? Math.round((project.deliverablesComplete / project.deliverablesTotal) * 100)
         : 0,
+      team: project.team,
     })),
     recentActivity: activity.map((item) => ({
       detail: item.detail ?? "",
@@ -1489,11 +1516,69 @@ export async function getOverviewData(user: SessionUser): Promise<OverviewData> 
       title: update.title,
     })),
     summary: [
-      { icon: "projects", value: String(projects.filter((project) => project.status === "Active").length), label: "active projects" },
-      { icon: "approvals", value: String(approvals.filter((approval) => approval.status === "Waiting").length), label: "approvals pending" },
-      { icon: "blockers", value: String(blockers.length), label: "client blockers" },
-      { icon: "updates", value: String(updates.length), label: "updates sent this week" },
+      { icon: "projects", value: String(projects.filter((project) => project.status === "Active").length), label: "Active Projects" },
+      { icon: "approvals", value: String(approvals.filter((approval) => approval.status === "Waiting").length), label: "Approvals Pending" },
+      { icon: "blockers", value: String(blockers.length), label: "Client Blockers" },
+      { icon: "updates", value: String(updates.length), label: "Updates Sent This Week" },
     ],
+  }
+}
+
+export async function getWeeklyActivitySummary(userId: string): Promise<WeeklyActivitySummary> {
+  await ensureUserAppData(userId)
+
+  const weekStart = startOfWeek(new Date())
+  const result = await db.query<{
+    client_comments: string
+    overdue_tasks: string
+    pending_approvals: string
+  }>(
+    `
+      select
+        (
+          select count(*)
+          from app_project_approvals
+          where user_id = $1
+            and status <> 'Approved'
+            and greatest(created_at, updated_at) >= $2
+        ) as pending_approvals,
+        (
+          select count(*)
+          from app_activity
+          where user_id = $1
+            and type = 'comment'
+            and occurred_at >= $2
+            and archived_at is null
+        ) as client_comments,
+        (
+          select count(*)
+          from app_project_tasks
+          where user_id = $1
+            and status <> 'Complete'
+            and due_label ilike '%overdue%'
+            and updated_at >= $2
+        ) as overdue_tasks
+    `,
+    [userId, weekStart],
+  )
+
+  const counts = result.rows[0] ?? {
+    client_comments: "0",
+    overdue_tasks: "0",
+    pending_approvals: "0",
+  }
+  const pendingApprovals = Number(counts.pending_approvals)
+  const clientComments = Number(counts.client_comments)
+  const overdueTasks = Number(counts.overdue_tasks)
+
+  return {
+    href: "/dashboard/inbox/all-activity",
+    items: [
+      countLabel(pendingApprovals, "approval pending", "approvals pending"),
+      countLabel(clientComments, "client comment", "client comments"),
+      countLabel(overdueTasks, "overdue task", "overdue tasks"),
+    ].filter((item): item is string => Boolean(item)),
+    label: "THIS WEEK",
   }
 }
 
@@ -1503,6 +1588,7 @@ export async function getProjects(user: SessionUser): Promise<Project[]> {
     `
       select
         p.*,
+        c.avatar_data_url as client_avatar_data_url,
         c.name as client_name
       from app_projects p
       left join app_clients c on c.id = p.client_id
@@ -2285,12 +2371,13 @@ export async function getTemplateBySlug(userId: string, slug: string) {
 }
 
 async function buildProject(user: SessionUser, row: ProjectRow): Promise<Project> {
-  const [tasks, deliverables, approvals, files, activity] = await Promise.all([
+  const [tasks, deliverables, approvals, files, activity, members] = await Promise.all([
     getTaskRows(user.id, row.id),
     getDeliverableRows(user.id, row.id),
     getApprovalRows(user.id, row.id),
     getProjectFileRows(user.id, row.id),
     getActivityRows(user.id, 100, row.id),
+    getProjectMemberRows(user.id, row.id),
   ])
   const phase = row.phase ?? "Strategy"
   const deliverablesComplete = deliverables.filter((item) => item.status === "Delivered").length
@@ -2309,6 +2396,7 @@ async function buildProject(user: SessionUser, row: ProjectRow): Promise<Project
     slug: row.slug,
     name: row.name,
     client: row.client_name ?? "No client assigned",
+    clientAvatar: row.client_avatar_data_url,
     owner: user.name ?? user.email,
     started: row.started_label ?? formatDateLabel(row.created_at),
     timeline: row.timeline ?? "Not set",
@@ -2349,7 +2437,9 @@ async function buildProject(user: SessionUser, row: ProjectRow): Promise<Project
     })),
     blockers,
     clientActivity: activity.slice(0, 4).map((item) => item.title),
-    team: [{ name: user.name ?? user.email, role: "Owner" }],
+    team: members.length
+      ? members
+      : [{ id: "owner", name: user.name ?? user.email, removable: false, role: "Owner" }],
     tasks: tasks.map((task) => ({
       title: task.title,
       assignee: task.assignee ?? "Workspace owner",
@@ -2487,6 +2577,29 @@ async function getProjectFileRows(userId: string, projectId?: string) {
   return result.rows
 }
 
+async function getProjectMemberRows(userId: string, projectId: string): Promise<ProjectMember[]> {
+  const result = await db.query<{
+    id: string
+    name: string
+    role: string
+  }>(
+    `
+      select id, name, role
+      from app_project_members
+      where user_id = $1 and project_id = $2
+      order by created_at, name
+    `,
+    [userId, projectId],
+  )
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    removable: true,
+    role: row.role,
+  }))
+}
+
 async function getClientFileRows(userId: string, clientId: string) {
   const result = await db.query<{
     name: string
@@ -2572,6 +2685,11 @@ function activityIcon(typeValue: string): OverviewActivity["icon"] {
   if (typeValue === "comment") return "comment"
   if (typeValue === "delivery") return "delivery"
   return "send"
+}
+
+function countLabel(count: number, singular: string, plural: string) {
+  if (count <= 0) return null
+  return `${count} ${count === 1 ? singular : plural}`
 }
 
 function analyticsIcon(typeValue: string): AnalyticsData["activityFeed"][number]["icon"] {
@@ -2859,6 +2977,15 @@ function repositoryFileType(value: string): RepositoryFile["type"] {
 
 function shortKey(value: string) {
   return value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8) || "portal"
+}
+
+function startOfWeek(date: Date) {
+  const start = new Date(date)
+  const day = start.getDay()
+  const diff = day === 0 ? 6 : day - 1
+  start.setDate(start.getDate() - diff)
+  start.setHours(0, 0, 0, 0)
+  return start
 }
 
 function slugify(value: string) {
