@@ -12,6 +12,7 @@ import {
 	PanelsTopLeftIcon,
 	Settings2Icon,
 	SquareKanbanIcon,
+	ClipboardCheckIcon,
 	UserCogIcon,
 	UsersIcon,
 	WorkflowIcon,
@@ -47,6 +48,11 @@ export const navGroups: SidebarNavGroup[] = [
 					{ title: "Requests", path: "/dashboard/inbox/requests" },
 					{ title: "Archived", path: "/dashboard/inbox/archived" },
 				],
+			},
+			{
+				title: "Tasks",
+				path: "/dashboard/tasks",
+				icon: <ClipboardCheckIcon />,
 			},
 			{
 				title: "Projects",

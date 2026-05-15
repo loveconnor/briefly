@@ -29,9 +29,9 @@ export async function AppShell({
 		<div className="overflow-hidden">
 			<SidebarProvider className="relative h-svh">
 				<AppSidebar weeklyActivity={weeklyActivity} />
-				<SidebarInset className="md:peer-data-[variant=inset]:ml-0">
+				<SidebarInset className="min-w-0 md:peer-data-[variant=inset]:ml-0">
 					<AppHeader user={user} />
-					<div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
+					<div className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4 md:p-6">
 						{children}
 					</div>
 				</SidebarInset>

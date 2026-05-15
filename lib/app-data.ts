@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import type { DeliveryTask, TaskPriority, TaskStatus } from "@/components/dashboard/tasks/tasks-data"
 
 export type ActivityTone = "default" | "error" | "info" | "success" | "warning"
 
@@ -63,6 +64,13 @@ export type WeeklyActivitySummary = {
   href: string
   items: string[]
   label: string
+}
+
+export type TaskProjectOption = {
+  id: string
+  name: string
+  phase: string
+  client: string
 }
 
 export type ProjectPhase =
@@ -863,6 +871,25 @@ export async function ensureAppDataTables() {
       updated_at timestamptz not null default now()
     )
   `)
+  await db.query(`alter table app_project_tasks add column if not exists waiting_on text`)
+  await db.query(`alter table app_project_tasks add column if not exists priority text not null default 'Normal'`)
+  await db.query(`alter table app_project_tasks add column if not exists attachments jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists client_comments jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists approval_history jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists deliverables jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists dependencies jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists automation jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists timeline jsonb not null default '[]'::jsonb`)
+  await db.query(`alter table app_project_tasks add column if not exists created_by text not null default 'system'`)
+  await db.query(`alter table app_project_tasks alter column created_by set default 'system'`)
+  await db.query(`alter table app_project_tasks add column if not exists completed_at timestamptz`)
+  await db.query(`
+    update app_project_tasks
+    set created_by = 'system'
+    where source in ('project-create', 'onboarding')
+      and created_by = 'user'
+  `)
+  await db.query(`alter table app_project_tasks add column if not exists completed boolean not null default false`)
 
   await db.query(`
     create table if not exists app_project_members (
@@ -1580,6 +1607,125 @@ export async function getWeeklyActivitySummary(userId: string): Promise<WeeklyAc
     ].filter((item): item is string => Boolean(item)),
     label: "THIS WEEK",
   }
+}
+
+export async function getTaskProjectOptions(user: SessionUser): Promise<TaskProjectOption[]> {
+  await ensureUserAppData(user.id)
+
+  const result = await db.query<{
+    client_name: string | null
+    id: string
+    name: string
+    phase: string | null
+  }>(
+    `
+      select p.id, p.name, p.phase, c.name as client_name
+      from app_projects p
+      left join app_clients c on c.id = p.client_id
+      where p.user_id = $1
+      order by p.updated_at desc, p.created_at desc
+    `,
+    [user.id],
+  )
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    phase: row.phase ?? "Strategy",
+    client: row.client_name ?? "No client",
+  }))
+}
+
+export async function getDeliveryTasks(user: SessionUser): Promise<DeliveryTask[]> {
+  await ensureUserAppData(user.id)
+  const result = await db.query<{
+    activity: string | null
+    approval_history: unknown
+    assignee: string | null
+    attachments: unknown
+    automation: unknown
+    client_comments: unknown
+    client_name: string | null
+    completed: boolean
+    completed_at: Date | null
+    created_at: Date
+    created_by: DeliveryTask["createdBy"]
+    deliverables: unknown
+    dependencies: unknown
+    detail: string | null
+    due_label: string | null
+    id: string
+    phase: string | null
+    priority: string
+    project_name: string
+    status: string
+    timeline: unknown
+    title: string
+    updated_at: Date
+    waiting_on: string | null
+  }>(
+    `
+      select
+        t.id,
+        t.title,
+        t.assignee,
+        t.due_label,
+        t.status,
+        t.detail,
+        t.waiting_on,
+        t.priority,
+        t.attachments,
+        t.client_comments,
+        t.approval_history,
+        t.deliverables,
+        t.dependencies,
+        t.automation,
+        t.timeline,
+        t.created_by,
+        t.completed,
+        t.completed_at,
+        t.created_at,
+        t.updated_at,
+        p.name as project_name,
+        p.phase,
+        c.name as client_name,
+        t.detail as activity
+      from app_project_tasks t
+      join app_projects p on p.id = t.project_id
+      left join app_clients c on c.id = p.client_id
+      where t.user_id = $1
+      order by t.completed asc, t.updated_at desc, t.sort_order asc, t.created_at desc
+    `,
+    [user.id],
+  )
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.title,
+    project: row.project_name,
+    client: row.client_name ?? "No client",
+    phase: row.phase ?? "Strategy",
+    assignee: row.assignee ?? user.name ?? user.email,
+    status: deliveryTaskStatus(row.status, row.completed),
+    due: row.due_label ?? "Unscheduled",
+    dueRank: dueRank(row.due_label),
+    waitingOn: row.waiting_on ?? "None",
+    priority: deliveryTaskPriority(row.priority),
+    activity: row.updated_at ? `Updated ${relativeTime(row.updated_at)}` : "No activity yet",
+    description: row.detail ?? "No description recorded.",
+    attachments: stringArray(row.attachments),
+    clientComments: stringArray(row.client_comments),
+    approvalHistory: stringArray(row.approval_history),
+    deliverables: stringArray(row.deliverables),
+    dependencies: stringArray(row.dependencies),
+    automation: stringArray(row.automation),
+    timeline: stringArray(row.timeline).length
+      ? stringArray(row.timeline)
+      : [`Task created ${relativeTime(row.created_at)}`],
+    completed: row.completed,
+    completedAt: row.completed_at?.toISOString() ?? null,
+    createdBy: row.created_by ?? "user",
+  }))
 }
 
 export async function getProjects(user: SessionUser): Promise<Project[]> {
@@ -2935,6 +3081,41 @@ function projectTaskStatus(value: string): ProjectTaskStatus {
   if (value === "Waiting") return "Waiting"
   if (value === "Blocked") return "Blocked"
   return "Ready"
+}
+
+function deliveryTaskStatus(value: string, completed?: boolean): TaskStatus {
+  if (completed) return "Delivered"
+  if (value === "Active" || value === "In progress") return "Active"
+  if (value === "Waiting") return "Waiting"
+  if (value === "Blocked") return "Blocked"
+  if (value === "Review") return "Review"
+  if (value === "Scheduled" || value === "Ready") return "Scheduled"
+  if (value === "Delivered" || value === "Complete") return "Delivered"
+  if (value === "Client Review") return "Client Review"
+  if (value === "Internal QA") return "Internal QA"
+  if (value === "Ready to Launch") return "Ready to Launch"
+  return "Active"
+}
+
+function deliveryTaskPriority(value: string): TaskPriority {
+  if (value === "Low") return "Low"
+  if (value === "High") return "High"
+  if (value === "Urgent") return "Urgent"
+  return "Normal"
+}
+
+function dueRank(value: string | null) {
+  if (!value) return 4
+  const normalized = value.toLowerCase()
+  if (normalized.includes("overdue") || normalized.includes("yesterday")) return -1
+  if (normalized.includes("today")) return 0
+  if (normalized.includes("tomorrow")) return 1
+  return 3
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
 }
 
 function relativeTime(date: Date) {

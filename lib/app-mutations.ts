@@ -22,6 +22,18 @@ export class AppMutationError extends Error {
 const clientStatuses = new Set(["Active", "Waiting", "Blocked", "Paused", "Completed", "Archived"])
 const projectTemplates = new Set(["web-design", "web-dev", "seo", "branding", "retainer", "custom"])
 const updateTypes = new Set(["APPROVAL", "DELIVERABLE", "FOLLOW-UP", "LAUNCH", "REVISION", "STATUS"])
+const taskStatuses = new Set([
+  "Active",
+  "Waiting",
+  "Blocked",
+  "Review",
+  "Scheduled",
+  "Delivered",
+  "Client Review",
+  "Internal QA",
+  "Ready to Launch",
+])
+const taskPriorities = new Set(["Low", "Normal", "High", "Urgent"])
 
 export async function createClient(
   userId: string,
@@ -254,6 +266,176 @@ export async function createClientUpdate(
       title,
     },
   }
+}
+
+export async function createDeliveryTask(
+  user: SessionUser,
+  payload: {
+    assignee?: unknown
+    clientVisible?: unknown
+    dependencies?: unknown
+    dueDate?: unknown
+    phase?: unknown
+    priority?: unknown
+    projectId?: unknown
+    status?: unknown
+    taskName?: unknown
+  },
+) {
+  await ensureAppDataTables()
+
+  const name = requiredString(payload.taskName, "Task name is required.")
+  const projectId = requiredString(payload.projectId, "Project is required.")
+  const project = await getProjectRowForUser(user.id, projectId)
+  const assignee = optionalString(payload.assignee) ?? user.name ?? user.email
+  const dueLabel = optionalString(payload.dueDate) ?? "Unscheduled"
+  const status = enumValue(payload.status, taskStatuses, "Active")
+  const priority = enumValue(payload.priority, taskPriorities, "Normal")
+  const dependencies = parseStringList(payload.dependencies)
+  const waitingOn = dependencies[0] ?? "None"
+  const clientVisible = Boolean(payload.clientVisible)
+  const id = `task:${randomUUID()}`
+
+  await db.query(
+    `
+      insert into app_project_tasks (
+        id,
+        user_id,
+        project_id,
+        title,
+        assignee,
+        due_label,
+        status,
+        detail,
+        waiting_on,
+        priority,
+        approval_history,
+        dependencies,
+        automation,
+        timeline,
+        created_by,
+        completed,
+        updated_at
+      )
+      values (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        'New delivery task created from the operational task queue.',
+        $8,
+        $9,
+        $10::jsonb,
+        $11::jsonb,
+        $12::jsonb,
+        $13::jsonb,
+        'user',
+        false,
+        now()
+      )
+    `,
+    [
+      id,
+      user.id,
+      project.id,
+      name,
+      assignee,
+      dueLabel,
+      status,
+      waitingOn,
+      priority,
+      JSON.stringify(clientVisible ? ["Client-visible task created"] : []),
+      JSON.stringify(dependencies),
+      JSON.stringify(clientVisible ? ["Client-visible"] : []),
+      JSON.stringify(["Task created"]),
+    ],
+  )
+
+  await addActivity(user.id, {
+    clientId: project.client_id,
+    detail: `Due ${dueLabel}. Waiting on ${waitingOn}.`,
+    projectId: project.id,
+    title: `${name} created`,
+    tone: "info",
+    type: "update",
+  })
+
+  return { taskId: id }
+}
+
+export async function deleteDeliveryTask(userId: string, taskId: string) {
+  await ensureAppDataTables()
+
+  const result = await db.query<{ id: string }>(
+    `
+      delete from app_project_tasks
+      where user_id = $1
+        and id = $2
+        and created_by = 'user'
+      returning id
+    `,
+    [userId, taskId],
+  )
+
+  if (!result.rows[0]) {
+    throw new AppMutationError("Task not found or cannot be deleted.", 404)
+  }
+
+  return { ok: true }
+}
+
+export async function markDeliveryTaskComplete(userId: string, taskId: string) {
+  await ensureAppDataTables()
+
+  const result = await db.query<{ id: string }>(
+    `
+      update app_project_tasks
+      set
+        completed = true,
+        completed_at = now(),
+        status = 'Delivered',
+        timeline = coalesce(timeline, '[]'::jsonb) || '["Completed"]'::jsonb,
+        updated_at = now()
+      where user_id = $1 and id = $2
+      returning id
+    `,
+    [userId, taskId],
+  )
+
+  if (!result.rows[0]) {
+    throw new AppMutationError("Task not found.", 404)
+  }
+
+  return { ok: true }
+}
+
+export async function sendDeliveryTaskReminder(userId: string, taskId: string) {
+  await ensureAppDataTables()
+
+  const result = await db.query<{ id: string }>(
+    `
+      update app_project_tasks
+      set
+        automation = (
+          select jsonb_agg(distinct signal)
+          from jsonb_array_elements_text(coalesce(automation, '[]'::jsonb) || '["Reminder sent"]'::jsonb) as signal
+        ),
+        timeline = coalesce(timeline, '[]'::jsonb) || '["Reminder sent"]'::jsonb,
+        updated_at = now()
+      where user_id = $1 and id = $2
+      returning id
+    `,
+    [userId, taskId],
+  )
+
+  if (!result.rows[0]) {
+    throw new AppMutationError("Task not found.", 404)
+  }
+
+  return { ok: true }
 }
 
 export async function deleteProject(userId: string, slug: string) {
@@ -685,6 +867,26 @@ async function getProjectByName(userId: string, name: string) {
   return result.rows[0] ?? null
 }
 
+async function getProjectRowForUser(userId: string, projectId: string) {
+  const result = await db.query<{
+    client_id: string | null
+    id: string
+    name: string
+  }>(
+    `
+      select id, name, client_id
+      from app_projects
+      where user_id = $1 and id = $2
+      limit 1
+    `,
+    [userId, projectId],
+  )
+
+  const project = result.rows[0]
+  if (!project) throw new AppMutationError("Project not found.", 404)
+  return project
+}
+
 async function getProjectBySlug(userId: string, slug: string) {
   const result = await db.query<{
     client_id: string | null
@@ -884,6 +1086,23 @@ function optionalString(value: unknown) {
   if (typeof value !== "string") return null
   const trimmed = value.trim()
   return trimmed ? trimmed : null
+}
+
+function parseStringList(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean)
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+
+  return []
 }
 
 function parseRecipients(value: unknown) {
