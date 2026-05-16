@@ -412,6 +412,71 @@ export async function markDeliveryTaskComplete(userId: string, taskId: string) {
   return { ok: true }
 }
 
+export async function updateDeliveryTaskStatus(
+  userId: string,
+  taskId: string,
+  statusValue: unknown,
+  orderedTaskIdsValue?: unknown,
+) {
+  await ensureAppDataTables()
+
+  const status = enumValue<string>(statusValue, taskStatuses, "Active")
+  const completed = status === "Delivered"
+  const orderedTaskIds = parseStringList(orderedTaskIdsValue)
+
+  const client = await db.connect()
+  try {
+    await client.query("begin")
+
+    const result = await client.query<{ id: string }>(
+      `
+        update app_project_tasks
+        set
+          status = $3,
+          completed = $4,
+          completed_at = case
+            when $4 then coalesce(completed_at, now())
+            else null
+          end,
+          timeline = coalesce(timeline, '[]'::jsonb) || $5::jsonb,
+          updated_at = now()
+        where user_id = $1 and id = $2
+        returning id
+      `,
+      [
+        userId,
+        taskId,
+        status,
+        completed,
+        JSON.stringify([`Moved to ${status}`]),
+      ],
+    )
+
+    if (!result.rows[0]) {
+      throw new AppMutationError("Task not found.", 404)
+    }
+
+    for (const [index, orderedTaskId] of orderedTaskIds.entries()) {
+      await client.query(
+        `
+          update app_project_tasks
+          set sort_order = $3, updated_at = now()
+          where user_id = $1 and id = $2
+        `,
+        [userId, orderedTaskId, index],
+      )
+    }
+
+    await client.query("commit")
+    return { ok: true }
+  } catch (error) {
+    await client.query("rollback")
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export async function sendDeliveryTaskReminder(userId: string, taskId: string) {
   await ensureAppDataTables()
 

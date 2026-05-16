@@ -4,6 +4,7 @@ import {
   deleteDeliveryTask,
   markDeliveryTaskComplete,
   sendDeliveryTaskReminder,
+  updateDeliveryTaskStatus,
 } from "@/lib/app-mutations"
 import { getDeliveryTasks } from "@/lib/app-data"
 import { getSessionOrUnauthorized, mutationErrorResponse, unauthorizedResponse } from "@/lib/api-responses"
@@ -27,6 +28,13 @@ export async function PATCH(
       await sendDeliveryTaskReminder(session.user.id, decodeURIComponent(id))
     } else if (payload.action === "mark-complete") {
       await markDeliveryTaskComplete(session.user.id, decodeURIComponent(id))
+    } else if (payload.action === "update-status") {
+      await updateDeliveryTaskStatus(
+        session.user.id,
+        decodeURIComponent(id),
+        payload.status,
+        payload.orderedTaskIds,
+      )
     } else {
       return NextResponse.json({ error: "Invalid task action." }, { status: 400 })
     }

@@ -18,24 +18,27 @@ export function TaskDisplayControls({
 	onViewChange: (view: TaskView) => void;
 }) {
 	return (
-		<div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-			<div className="flex max-w-full gap-0.5 overflow-x-auto">
+		<div className="flex flex-col gap-3 border-b border-border/60 pb-3 lg:flex-row lg:items-center lg:justify-between">
+			<div className="flex max-w-full rounded-lg bg-muted/25 p-0.5">
 				{taskViews.map((view) => (
 					<Button
-						className="h-7 shrink-0 rounded-full px-2.5 text-xs"
+						className={cn(
+							"h-8 shrink-0 rounded-md px-3 text-sm",
+							activeView === view.value && "bg-background text-foreground shadow-xs"
+						)}
 						key={view.value}
 						onClick={() => onViewChange(view.value)}
-						variant={activeView === view.value ? "secondary" : "ghost"}
+						variant="ghost"
 					>
 						{view.label}
 					</Button>
 				))}
 			</div>
-			<div className="flex flex-wrap items-end gap-4 lg:justify-end">
-				<div className="flex rounded-md bg-muted/25 p-0.5">
+			<div className="flex flex-wrap items-center gap-3 lg:justify-end">
+				<div className="flex rounded-lg bg-muted/25 p-0.5">
 					<Button
 						className={cn(
-							"h-7 px-2 text-xs",
+							"h-8 rounded-md px-2.5 text-sm",
 							displayMode === "list" && "bg-background text-foreground shadow-xs"
 						)}
 						onClick={() => onDisplayModeChange("list")}
@@ -46,14 +49,14 @@ export function TaskDisplayControls({
 					</Button>
 					<Button
 						className={cn(
-							"h-7 px-2 text-xs",
+							"h-8 rounded-md px-2.5 text-sm",
 							displayMode === "kanban" && "bg-background text-foreground shadow-xs"
 						)}
 						onClick={() => onDisplayModeChange("kanban")}
 						variant="ghost"
 					>
 						<Columns3Icon className="size-4" />
-						Kanban
+						Board
 					</Button>
 				</div>
 			</div>

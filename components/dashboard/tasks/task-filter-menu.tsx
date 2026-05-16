@@ -11,28 +11,46 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { priorityItems, statusItems, type TaskSourceFilter } from "./tasks-constants";
+import {
+	dueFilterItems,
+	priorityItems,
+	statusItems,
+	workflowFilterItems,
+	type TaskDueFilter,
+	type TaskSourceFilter,
+	type TaskWorkflowFilter,
+} from "./tasks-constants";
 import type { TaskPriority, TaskStatus } from "./tasks-data";
 
 export function TaskFilterMenu({
+	due,
+	onDueChange,
 	onPriorityChange,
 	onSourceChange,
 	onStatusChange,
+	onWorkflowChange,
 	priority,
 	source,
 	status,
+	workflow,
 }: {
+	due: TaskDueFilter;
+	onDueChange: (due: TaskDueFilter) => void;
 	onPriorityChange: (priority: TaskPriority | "all") => void;
 	onSourceChange: (source: TaskSourceFilter) => void;
 	onStatusChange: (status: TaskStatus | "all") => void;
+	onWorkflowChange: (workflow: TaskWorkflowFilter) => void;
 	priority: TaskPriority | "all";
 	source: TaskSourceFilter;
 	status: TaskStatus | "all";
+	workflow: TaskWorkflowFilter;
 }) {
 	const activeFilterCount = [
+		due !== "all",
 		status !== "all",
 		priority !== "all",
 		source !== "all",
+		workflow !== "all",
 	].filter(Boolean).length;
 
 	return (
@@ -47,6 +65,26 @@ export function TaskFilterMenu({
 				}
 			/>
 			<DropdownMenuContent align="end" className="w-56">
+				<DropdownMenuLabel>Due</DropdownMenuLabel>
+				{dueFilterItems.map((item) => (
+					<FilterMenuItem
+						active={due === item.value}
+						key={item.value}
+						label={item.label}
+						onClick={() => onDueChange(item.value)}
+					/>
+				))}
+				<DropdownMenuSeparator />
+				<DropdownMenuLabel>Work type</DropdownMenuLabel>
+				{workflowFilterItems.map((item) => (
+					<FilterMenuItem
+						active={workflow === item.value}
+						key={item.value}
+						label={item.label}
+						onClick={() => onWorkflowChange(item.value)}
+					/>
+				))}
+				<DropdownMenuSeparator />
 				<DropdownMenuLabel>Status</DropdownMenuLabel>
 				<FilterMenuItem
 					active={status === "all"}
@@ -103,9 +141,11 @@ export function TaskFilterMenu({
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={() => {
+								onDueChange("all");
 								onStatusChange("all");
 								onPriorityChange("all");
 								onSourceChange("all");
+								onWorkflowChange("all");
 							}}
 						>
 							Clear filters

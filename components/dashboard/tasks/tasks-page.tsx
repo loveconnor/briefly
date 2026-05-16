@@ -1,9 +1,14 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import type { TaskProjectOption } from "@/lib/app-data";
 
 import { NewTaskDialog } from "./new-task-dialog";
@@ -16,7 +21,9 @@ import { TaskSelectionActionBar } from "./task-selection-action-bar";
 import { TaskSummaryStrip } from "./task-summary-strip";
 import {
 	type DisplayMode,
+	type TaskDueFilter,
 	type TaskSourceFilter,
+	type TaskWorkflowFilter,
 } from "./tasks-constants";
 import {
 	type DeliveryTask,
@@ -32,11 +39,14 @@ export function TasksPage({
 	initialProjectOptions: TaskProjectOption[];
 	initialTasks: DeliveryTask[];
 }) {
-	const [activeView, setActiveView] = useState<TaskView>("my-tasks");
+	const [activeView, setActiveView] = useState<TaskView>("mine");
 	const [displayMode, setDisplayMode] = useState<DisplayMode>("list");
+	const [dueFilter, setDueFilter] = useState<TaskDueFilter>("all");
 	const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
 	const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">("all");
 	const [sourceFilter, setSourceFilter] = useState<TaskSourceFilter>("all");
+	const [workflowFilter, setWorkflowFilter] = useState<TaskWorkflowFilter>("all");
+	const [searchQuery, setSearchQuery] = useState("");
 	const [tasks, setTasks] = useState<DeliveryTask[]>(initialTasks);
 	const [weekStartMs] = useState(() => Date.now() - 7 * 24 * 60 * 60 * 1000);
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
@@ -53,12 +63,26 @@ export function TasksPage({
 	const [clientVisible, setClientVisible] = useState(true);
 
 	const filteredTasks = useMemo(() => {
+		const normalizedQuery = searchQuery.trim().toLowerCase();
+
 		return tasks
 			.filter((task) => matchesView(task, activeView))
+			.filter((task) => matchesSearch(task, normalizedQuery))
+			.filter((task) => matchesDueFilter(task, dueFilter))
+			.filter((task) => matchesWorkflowFilter(task, workflowFilter))
 			.filter((task) => statusFilter === "all" || task.status === statusFilter)
 			.filter((task) => priorityFilter === "all" || task.priority === priorityFilter)
 			.filter((task) => sourceFilter === "all" || task.createdBy === sourceFilter);
-	}, [activeView, priorityFilter, sourceFilter, statusFilter, tasks]);
+	}, [
+		activeView,
+		dueFilter,
+		priorityFilter,
+		searchQuery,
+		sourceFilter,
+		statusFilter,
+		tasks,
+		workflowFilter,
+	]);
 
 	function createTask(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -120,6 +144,16 @@ export function TasksPage({
 		});
 	}
 
+	function moveTask(taskId: string, status: TaskStatus, orderedTaskIds: string[]) {
+		setTasks((current) => reorderTasks(current, taskId, status, orderedTaskIds));
+
+		void mutateTasks(`/api/tasks/${encodeURIComponent(taskId)}`, {
+			body: JSON.stringify({ action: "update-status", orderedTaskIds, status }),
+			headers: { "Content-Type": "application/json" },
+			method: "PATCH",
+		});
+	}
+
 	function toggleTaskSelection(taskId: string, checked: boolean) {
 		setSelectedTaskIds((current) =>
 			checked
@@ -147,7 +181,7 @@ export function TasksPage({
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-[1360px] space-y-6">
+		<div className="mx-auto flex min-h-full w-full max-w-[1360px] flex-col gap-6">
 			<header className="flex min-w-0 flex-col gap-4 border-b pb-5 xl:flex-row xl:items-end xl:justify-between">
 				<div className="min-w-0">
 					<h1 className="text-2xl font-bold tracking-tight">Tasks</h1>
@@ -160,25 +194,55 @@ export function TasksPage({
 						<PlusIcon className="size-4" />
 						New task
 					</Button>
+					<InputGroup className="w-full min-w-48 flex-1 border-transparent bg-muted/50 shadow-none xl:w-52 xl:flex-none">
+						<InputGroupAddon>
+							<SearchIcon className="size-4" />
+						</InputGroupAddon>
+						<InputGroupInput
+							aria-label="Search tasks"
+							onChange={(event) => setSearchQuery(event.target.value)}
+							placeholder="Search tasks"
+							value={searchQuery}
+						/>
+					</InputGroup>
 					<TaskFilterMenu
+						due={dueFilter}
+						onDueChange={setDueFilter}
 						onPriorityChange={setPriorityFilter}
 						onSourceChange={setSourceFilter}
 						onStatusChange={setStatusFilter}
+						onWorkflowChange={setWorkflowFilter}
 						priority={priorityFilter}
 						source={sourceFilter}
 						status={statusFilter}
+						workflow={workflowFilter}
 					/>
 				</div>
 			</header>
 
 			<TaskSummaryStrip tasks={tasks} weekStartMs={weekStartMs} />
 
-			<section className="space-y-4">
+			<section className="flex min-h-0 flex-1 flex-col gap-4">
 				<TaskDisplayControls
 					activeView={activeView}
 					displayMode={displayMode}
 					onDisplayModeChange={setDisplayMode}
 					onViewChange={setActiveView}
+				/>
+
+				<ActiveTaskFilters
+					due={dueFilter}
+					onClearDue={() => setDueFilter("all")}
+					onClearPriority={() => setPriorityFilter("all")}
+					onClearSearch={() => setSearchQuery("")}
+					onClearSource={() => setSourceFilter("all")}
+					onClearStatus={() => setStatusFilter("all")}
+					onClearWorkflow={() => setWorkflowFilter("all")}
+					priority={priorityFilter}
+					searchQuery={searchQuery}
+					source={sourceFilter}
+					status={statusFilter}
+					workflow={workflowFilter}
 				/>
 
 				{selectedTaskIds.length ? (
@@ -191,13 +255,16 @@ export function TasksPage({
 				) : null}
 
 				{displayMode === "kanban" ? (
-					<TaskKanbanBoard
-						onDelete={deleteTask}
-						onMarkComplete={(taskId) => markTasksComplete([taskId])}
-						onSelect={setSelectedTask}
-						onSendReminder={(taskId) => sendReminder([taskId])}
-						tasks={filteredTasks}
-					/>
+					<div className="min-h-0 flex-1">
+						<TaskKanbanBoard
+							onDelete={deleteTask}
+							onMarkComplete={(taskId) => markTasksComplete([taskId])}
+							onMoveTask={moveTask}
+							onSelect={setSelectedTask}
+							onSendReminder={(taskId) => sendReminder([taskId])}
+							tasks={filteredTasks}
+						/>
+					</div>
 				) : null}
 
 				<TaskList
@@ -245,12 +312,162 @@ export function TasksPage({
 }
 
 function matchesView(task: DeliveryTask, activeView: TaskView) {
-	if (activeView === "my-tasks") return task.assignee === "Connor" && !task.completed;
-	if (activeView === "due-soon") return task.dueRank <= 3 && !task.completed;
-	if (activeView === "waiting") return task.status === "Waiting" || task.status === "Client Review";
-	if (activeView === "blocked") return task.status === "Blocked";
-	if (activeView === "approvals") return ["Review", "Client Review"].includes(task.status);
-	if (activeView === "launches") return ["Launch Prep", "Ready to Launch"].includes(task.phase) || task.status === "Ready to Launch";
+	if (activeView === "mine") return task.assignee === "Connor";
+	if (activeView === "team") return true;
 	if (activeView === "completed") return Boolean(task.completed) || task.status === "Delivered";
 	return true;
+}
+
+function matchesSearch(task: DeliveryTask, normalizedQuery: string) {
+	if (!normalizedQuery) return true;
+
+	return [
+		task.name,
+		task.project,
+		task.client,
+		task.phase,
+		task.assignee,
+		task.waitingOn,
+		task.description,
+	]
+		.join(" ")
+		.toLowerCase()
+		.includes(normalizedQuery);
+}
+
+function matchesDueFilter(task: DeliveryTask, dueFilter: TaskDueFilter) {
+	if (dueFilter === "all") return true;
+	if (dueFilter === "today") return task.due.toLowerCase() === "today";
+	if (dueFilter === "due-soon") return task.dueRank <= 3 && !isCompletedTask(task);
+	if (dueFilter === "overdue") return task.due.toLowerCase() === "overdue";
+	return true;
+}
+
+function matchesWorkflowFilter(task: DeliveryTask, workflowFilter: TaskWorkflowFilter) {
+	if (workflowFilter === "all") return true;
+	if (workflowFilter === "approvals") {
+		return ["Review", "Client Review"].includes(task.status);
+	}
+	if (workflowFilter === "launches") {
+		return ["Launch Prep", "Ready to Launch"].includes(task.phase) || task.status === "Ready to Launch";
+	}
+	return true;
+}
+
+function isCompletedTask(task: DeliveryTask) {
+	return Boolean(task.completed) || task.status === "Delivered";
+}
+
+function reorderTasks(
+	tasks: DeliveryTask[],
+	taskId: string,
+	status: TaskStatus,
+	orderedTaskIds: string[]
+) {
+	const movingTask = tasks.find((task) => task.id === taskId);
+	if (!movingTask) return tasks;
+
+	const movedTask = {
+		...movingTask,
+		completed: status === "Delivered",
+		completedAt: status === "Delivered" ? movingTask.completedAt ?? "Just now" : null,
+		status,
+	};
+	const remainingTasks = tasks.filter((task) => task.id !== taskId);
+	const nextTasks = [...remainingTasks];
+	const targetIndex = orderedTaskIds.indexOf(taskId);
+	const beforeTaskId = targetIndex >= 0 ? orderedTaskIds[targetIndex + 1] : undefined;
+	const afterTaskId = targetIndex > 0 ? orderedTaskIds[targetIndex - 1] : undefined;
+	const beforeIndex = beforeTaskId
+		? nextTasks.findIndex((task) => task.id === beforeTaskId)
+		: -1;
+
+	if (beforeIndex >= 0) {
+		nextTasks.splice(beforeIndex, 0, movedTask);
+		return nextTasks;
+	}
+
+	const afterIndex = afterTaskId
+		? nextTasks.findIndex((task) => task.id === afterTaskId)
+		: -1;
+
+	if (afterIndex >= 0) {
+		nextTasks.splice(afterIndex + 1, 0, movedTask);
+		return nextTasks;
+	}
+
+	return [movedTask, ...nextTasks];
+}
+
+function ActiveTaskFilters({
+	due,
+	onClearDue,
+	onClearPriority,
+	onClearSearch,
+	onClearSource,
+	onClearStatus,
+	onClearWorkflow,
+	priority,
+	searchQuery,
+	source,
+	status,
+	workflow,
+}: {
+	due: TaskDueFilter;
+	onClearDue: () => void;
+	onClearPriority: () => void;
+	onClearSearch: () => void;
+	onClearSource: () => void;
+	onClearStatus: () => void;
+	onClearWorkflow: () => void;
+	priority: TaskPriority | "all";
+	searchQuery: string;
+	source: TaskSourceFilter;
+	status: TaskStatus | "all";
+	workflow: TaskWorkflowFilter;
+}) {
+	const filters = [
+		searchQuery.trim()
+			? { label: `Search: ${searchQuery.trim()}`, onClear: onClearSearch }
+			: null,
+		due !== "all" ? { label: dueFilterLabel(due), onClear: onClearDue } : null,
+		workflow !== "all"
+			? { label: workflow === "approvals" ? "Approvals" : "Launches", onClear: onClearWorkflow }
+			: null,
+		status !== "all" ? { label: `Status: ${status}`, onClear: onClearStatus } : null,
+		priority !== "all" ? { label: `Priority: ${priority}`, onClear: onClearPriority } : null,
+		source !== "all" ? { label: sourceFilterLabel(source), onClear: onClearSource } : null,
+	].filter(Boolean) as { label: string; onClear: () => void }[];
+
+	if (!filters.length) return null;
+
+	return (
+		<div className="flex flex-wrap items-center gap-2">
+			{filters.map((filter) => (
+				<Button
+					className="h-7 rounded-full border-border/70 bg-muted/35 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+					key={filter.label}
+					onClick={filter.onClear}
+					variant="outline"
+				>
+					{filter.label}
+					<XIcon className="size-3.5" />
+				</Button>
+			))}
+		</div>
+	);
+}
+
+function dueFilterLabel(due: TaskDueFilter) {
+	if (due === "today") return "Due today";
+	if (due === "due-soon") return "Due soon";
+	if (due === "overdue") return "Overdue";
+	return "Any due date";
+}
+
+function sourceFilterLabel(source: TaskSourceFilter) {
+	if (source === "user") return "Created by user";
+	if (source === "client") return "Client-created";
+	if (source === "system") return "System-created";
+	return "Any source";
 }

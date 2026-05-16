@@ -13,14 +13,7 @@ export type TaskStatus =
 
 export type TaskPriority = "Low" | "Normal" | "High" | "Urgent";
 
-export type TaskView =
-	| "my-tasks"
-	| "due-soon"
-	| "waiting"
-	| "blocked"
-	| "approvals"
-	| "launches"
-	| "completed";
+export type TaskView = "mine" | "team" | "completed";
 
 export type DeliveryTask = {
 	id: string;
@@ -68,11 +61,7 @@ export const priorityTone: Record<TaskPriority, BadgeTone> = {
 };
 
 export const taskViews: { label: string; value: TaskView }[] = [
-	{ label: "My Tasks", value: "my-tasks" },
-	{ label: "Due Soon", value: "due-soon" },
-	{ label: "Waiting", value: "waiting" },
-	{ label: "Blocked", value: "blocked" },
-	{ label: "Approvals", value: "approvals" },
-	{ label: "Launches", value: "launches" },
+	{ label: "Mine", value: "mine" },
+	{ label: "Team", value: "team" },
 	{ label: "Completed", value: "completed" },
 ];
