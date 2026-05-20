@@ -33,7 +33,7 @@ export function RecentActivity({ activity }: { activity: OverviewActivity[] }) {
           const Icon = iconMap[item.icon];
 
           return (
-            <div key={item.title} className="flex gap-4">
+            <div key={item.id} className="flex gap-4">
               <div
                 className={cn(
                   "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md",

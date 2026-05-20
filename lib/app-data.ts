@@ -21,6 +21,7 @@ export type OverviewProject = {
 export type OverviewActivity = {
   detail: string
   icon: "approval" | "comment" | "delivery" | "phase" | "send" | "upload"
+  id: string
   time: string
   title: string
   tone: ActivityTone
@@ -1533,6 +1534,7 @@ export async function getOverviewData(user: SessionUser): Promise<OverviewData> 
     recentActivity: activity.map((item) => ({
       detail: item.detail ?? "",
       icon: activityIcon(item.type),
+      id: item.id,
       time: relativeTime(item.occurred_at),
       title: item.title,
       tone: tone(item.tone),
@@ -2770,6 +2772,7 @@ async function getActivityRows(userId: string, limit: number, projectId?: string
     client_id: string | null
     client_name: string | null
     detail: string | null
+    id: string
     occurred_at: Date
     project_id: string | null
     project_name: string | null
