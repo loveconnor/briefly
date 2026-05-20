@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import type { PortalData } from "./client-portal-data";
 import { StateItem } from "./state-item";
 
-export function PortalHeader({ data }: { data: PortalData }) {
+type PortalHeaderAction = "message" | "request" | "request-changes" | "upload-file";
+
+export function PortalHeader({
+	data,
+	onOpenAction,
+}: {
+	data: PortalData;
+	onOpenAction: (action: PortalHeaderAction) => void;
+}) {
 	return (
 		<>
 			<header className="border-b bg-background/95 backdrop-blur">
@@ -41,15 +49,15 @@ export function PortalHeader({ data }: { data: PortalData }) {
 						</p>
 					</div>
 					<div className="flex flex-col gap-2 sm:flex-row">
-						<Button className="min-h-10" variant="outline">
+						<Button className="min-h-10" onClick={() => onOpenAction("message")} variant="outline">
 							<MessageCircleIcon className="size-4" />
 							Message team
 						</Button>
-						<Button className="min-h-10" variant="outline">
+						<Button className="min-h-10" onClick={() => onOpenAction("upload-file")} variant="outline">
 							<UploadIcon className="size-4" />
 							Upload file
 						</Button>
-						<Button className="min-h-10" variant="outline">
+						<Button className="min-h-10" onClick={() => onOpenAction("request")} variant="outline">
 							<PlusIcon className="size-4" />
 							Request something
 						</Button>

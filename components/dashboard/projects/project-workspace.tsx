@@ -21,6 +21,7 @@ import {
 	SlidersHorizontalIcon,
 	UploadIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
@@ -607,9 +608,11 @@ export function ProjectWorkspace({ project }: { project: Project }) {
 							<SendIcon className="size-4" />
 							Share update
 						</Button>
-						<Button variant="outline">
-							<MousePointerSquareDashedIcon className="size-4" />
-							Open portal
+						<Button asChild disabled={!project.portalHref} variant="outline">
+							<Link href={project.portalHref ?? "#"}>
+								<MousePointerSquareDashedIcon className="size-4" />
+								Open portal
+							</Link>
 						</Button>
 						<Button>
 							<CheckCircle2Icon className="size-4" />

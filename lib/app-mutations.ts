@@ -366,6 +366,232 @@ export async function createDeliveryTask(
   return { taskId: id }
 }
 
+export async function submitPortalAction(
+  portalId: string,
+  payload: {
+    action?: unknown
+    fileName?: unknown
+    fileSize?: unknown
+    format?: unknown
+    message?: unknown
+    name?: unknown
+    taskId?: unknown
+    title?: unknown
+  },
+) {
+  await ensureAppDataTables()
+
+  const portal = await getPortalForPublicAction(portalId)
+  const action = requiredString(payload.action, "Portal action is required.")
+  const actor = optionalString(payload.name) ?? "Client"
+
+  if (action === "approve") {
+    await db.query(
+      `
+        update app_project_approvals
+        set status = 'Approved', latest_comment = 'Approved from client portal.', updated_label = 'Just now', updated_at = now()
+        where user_id = $1 and project_id = $2 and status <> 'Approved'
+      `,
+      [portal.user_id, portal.project_id],
+    )
+    await db.query(
+      `
+        update app_portals
+        set status = 'Approved',
+            status_detail = 'Approved from client portal.',
+            latest_action = 'Client approved the current review.',
+            approval_state = 'Approved',
+            updated_at = now()
+        where id = $1
+      `,
+      [portal.id],
+    )
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: "Approved from the client portal.",
+      projectId: portal.project_id,
+      title: `${portal.project_name} approved`,
+      tone: "success",
+      type: "approval",
+    })
+    return { ok: true }
+  }
+
+  if (action === "request-changes") {
+    const message = requiredString(payload.message, "Tell the team what should change.")
+    await db.query(
+      `
+        update app_project_approvals
+        set status = 'Changes requested', latest_comment = $3, updated_label = 'Just now', updated_at = now()
+        where user_id = $1 and project_id = $2 and status <> 'Approved'
+      `,
+      [portal.user_id, portal.project_id, message],
+    )
+    await db.query(
+      `
+        update app_portals
+        set status = 'In review',
+            status_detail = 'Client requested changes.',
+            latest_action = 'Client requested changes.',
+            approval_state = 'Changes requested',
+            updated_at = now()
+        where id = $1
+      `,
+      [portal.id],
+    )
+    await createPortalRequest(portal, {
+      actor,
+      detail: message,
+      status: "Changes requested",
+      title: `Changes requested for ${portal.project_name}`,
+    })
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: message,
+      projectId: portal.project_id,
+      title: "Client requested changes",
+      tone: "warning",
+      type: "comment",
+    })
+    return { ok: true }
+  }
+
+  if (action === "message") {
+    const message = requiredString(payload.message, "Message is required.")
+    const title = optionalString(payload.title) ?? "Client message"
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: message,
+      projectId: portal.project_id,
+      title,
+      tone: "info",
+      type: "comment",
+    })
+    await touchPortal(portal.id, "Client message received.")
+    return { ok: true }
+  }
+
+  if (action === "request") {
+    const title = requiredString(payload.title, "Request title is required.")
+    const detail = optionalString(payload.message)
+    await createPortalRequest(portal, {
+      actor,
+      detail,
+      status: "Open",
+      title,
+    })
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: detail ?? "Client opened a request.",
+      projectId: portal.project_id,
+      title,
+      tone: "info",
+      type: "request",
+    })
+    await touchPortal(portal.id, "Client request opened.")
+    return { ok: true }
+  }
+
+  if (action === "upload-file") {
+    const fileName = requiredString(payload.fileName, "File name is required.")
+    const size = optionalString(payload.fileSize) ?? "Uploaded from portal"
+    const format = portalFileFormat(payload.format ?? fileName)
+    await db.query(
+      `
+        insert into app_files (
+          id,
+          user_id,
+          project_id,
+          client_id,
+          name,
+          file_type,
+          format,
+          size_label,
+          status,
+          shared,
+          owner,
+          uploaded_by,
+          activity,
+          updated_at
+        )
+        values ($1, $2, $3, $4, $5, 'Assets', $6, $7, 'Ready', 'Shared', $8, $8, $9::jsonb, now())
+      `,
+      [
+        `file:${randomUUID()}`,
+        portal.user_id,
+        portal.project_id,
+        portal.client_id,
+        fileName,
+        format,
+        size,
+        actor,
+        JSON.stringify([`Uploaded by ${actor} on ${formatDateLabel(new Date())}`]),
+      ],
+    )
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: fileName,
+      projectId: portal.project_id,
+      title: "File uploaded",
+      tone: "success",
+      type: "upload",
+    })
+    await touchPortal(portal.id, "Client uploaded a file.")
+    return { ok: true }
+  }
+
+  if (action === "download-file") {
+    const fileName = requiredString(payload.fileName, "File name is required.")
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: fileName,
+      projectId: portal.project_id,
+      title: "File downloaded",
+      tone: "info",
+      type: "download",
+    })
+    await touchPortal(portal.id, "Client downloaded a file.")
+    return { ok: true }
+  }
+
+  if (action === "complete-task") {
+    const taskId = requiredString(payload.taskId, "Task is required.")
+    const result = await db.query<{ title: string }>(
+      `
+        update app_project_tasks
+        set completed = true,
+            completed_at = now(),
+            status = 'Delivered',
+            updated_at = now()
+        where user_id = $1 and project_id = $2 and id = $3
+        returning title
+      `,
+      [portal.user_id, portal.project_id, taskId],
+    )
+    const task = result.rows[0]
+    if (!task) throw new AppMutationError("Task not found.", 404)
+    await addActivity(portal.user_id, {
+      actor,
+      clientId: portal.client_id,
+      detail: "Marked complete from the client portal.",
+      projectId: portal.project_id,
+      title: `${task.title} completed`,
+      tone: "success",
+      type: "approval",
+    })
+    await touchPortal(portal.id, "Client completed a task.")
+    return { ok: true }
+  }
+
+  throw new AppMutationError("Invalid portal action.")
+}
+
 export async function deleteDeliveryTask(userId: string, taskId: string) {
   await ensureAppDataTables()
 
@@ -852,9 +1078,109 @@ export async function removeDomain(userId: string, name: string) {
   return { ok: true }
 }
 
+type PortalActionContext = {
+  client_id: string | null
+  id: string
+  project_id: string
+  project_name: string
+  user_id: string
+}
+
+async function getPortalForPublicAction(portalId: string): Promise<PortalActionContext> {
+  const result = await db.query<{
+    client_id: string | null
+    id: string
+    project_id: string | null
+    project_name: string | null
+    user_id: string
+  }>(
+    `
+      select po.id, po.user_id, po.project_id, p.client_id, p.name as project_name
+      from app_portals po
+      left join app_projects p on p.id = po.project_id
+      where po.id = $1
+      limit 1
+    `,
+    [portalId],
+  )
+  const portal = result.rows[0]
+
+  if (!portal || !portal.project_id) {
+    throw new AppMutationError("Portal not found.", 404)
+  }
+
+  return {
+    client_id: portal.client_id,
+    id: portal.id,
+    project_id: portal.project_id,
+    project_name: portal.project_name ?? "Project",
+    user_id: portal.user_id,
+  }
+}
+
+async function createPortalRequest(
+  portal: PortalActionContext,
+  input: {
+    actor: string
+    detail?: string | null
+    status: string
+    title: string
+  },
+) {
+  await db.query(
+    `
+      insert into app_requests (
+        id,
+        user_id,
+        project_id,
+        client_id,
+        title,
+        detail,
+        from_name,
+        status,
+        assigned_to,
+        due_label
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, 'Workspace owner', 'Not scheduled')
+    `,
+    [
+      `request:${randomUUID()}`,
+      portal.user_id,
+      portal.project_id,
+      portal.client_id,
+      input.title,
+      input.detail ?? null,
+      input.actor,
+      input.status,
+    ],
+  )
+}
+
+async function touchPortal(portalId: string, latestAction: string) {
+  await db.query(
+    `
+      update app_portals
+      set latest_action = $2, updated_at = now()
+      where id = $1
+    `,
+    [portalId, latestAction],
+  )
+}
+
+function portalFileFormat(value: unknown) {
+  const raw = typeof value === "string" ? value.trim().toUpperCase() : ""
+  const extension = raw.includes(".") ? raw.split(".").pop() ?? "" : raw
+
+  if (extension === "DOC" || extension === "DOCX") return "DOCX"
+  if (extension === "JPG" || extension === "JPEG" || extension === "PNG" || extension === "WEBP") return "PNG"
+  if (extension === "ZIP") return "ZIP"
+  return "PDF"
+}
+
 async function addActivity(
   userId: string,
   input: {
+    actor?: string
     clientId?: string | null
     detail?: string
     projectId?: string | null
@@ -876,7 +1202,7 @@ async function addActivity(
         actor,
         tone
       )
-      values ($1, $2, $3, $4, $5, $6, $7, 'Workspace', $8)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `,
     [
       `activity:${randomUUID()}`,
@@ -886,6 +1212,7 @@ async function addActivity(
       input.type ?? "update",
       input.title,
       input.detail ?? null,
+      input.actor ?? "Workspace",
       input.tone ?? "default",
     ],
   )

@@ -9,23 +9,37 @@ import {
 } from "lucide-react";
 
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PortalData } from "./client-portal-data";
 
-export function TaskList({ data, limit }: { data: PortalData; limit?: number }) {
+export function TaskList({
+	data,
+	limit,
+	onCompleteTask,
+}: {
+	data: PortalData;
+	limit?: number;
+	onCompleteTask?: (taskId: string) => void;
+}) {
 	return (
 		<div>
 			{data.tasks.slice(0, limit).map((task) => (
-				<div className="flex items-start gap-4 py-3.5" key={task.title}>
-					<span
+				<div className="flex items-start gap-4 py-3.5" key={task.id}>
+					<button
+						aria-label={task.state === "done" ? `${task.title} completed` : `Mark ${task.title} complete`}
 						className={cn(
 							"mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm border",
-							task.state === "done" &&
-								"border-primary bg-primary text-primary-foreground"
+							task.state === "done"
+								? "border-primary bg-primary text-primary-foreground"
+								: "transition-colors hover:border-primary"
 						)}
+						disabled={task.state === "done" || !onCompleteTask}
+						onClick={() => onCompleteTask?.(task.id)}
+						type="button"
 					>
 						{task.state === "done" ? <CheckIcon className="size-3.5" /> : null}
-					</span>
+					</button>
 					<div className="min-w-0">
 						<p
 							className={cn(
@@ -75,14 +89,21 @@ export function MessageList({ data, limit }: { data: PortalData; limit?: number 
 	);
 }
 
-export function FileList({ data, limit }: { data: PortalData; limit?: number }) {
+export function FileList({
+	data,
+	limit,
+	onDownloadFile,
+}: {
+	data: PortalData;
+	limit?: number;
+	onDownloadFile?: (fileName: string) => void;
+}) {
 	return (
 		<div>
 			{data.files.slice(0, limit).map((file) => (
-				<a
+				<div
 					className="grid gap-3 py-3.5 transition-colors hover:text-foreground sm:grid-cols-[1fr_auto] sm:items-center"
-					href="#portal-tabs"
-					key={file.name}
+					key={file.id}
 				>
 					<span className="flex min-w-0 items-center gap-4">
 						<span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -95,11 +116,16 @@ export function FileList({ data, limit }: { data: PortalData; limit?: number }) 
 							</span>
 						</span>
 					</span>
-					<span className="flex items-center gap-1 text-sm font-medium sm:justify-self-end">
+					<Button
+						className="w-fit sm:justify-self-end"
+						onClick={() => onDownloadFile?.(file.name)}
+						size="sm"
+						variant="outline"
+					>
 						<DownloadIcon className="size-4" />
 						Download
-					</span>
-				</a>
+					</Button>
+				</div>
 			))}
 			{data.files.length === 0 ? (
 				<DashboardEmptyState className="my-3" icon={FileTextIcon} title="No files shared yet" />

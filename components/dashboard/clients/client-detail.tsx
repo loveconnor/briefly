@@ -305,9 +305,11 @@ export function ClientDetail({ client: initialClient }: { client: ClientRecord }
 						<Edit3Icon />
 						Edit info
 					</Button>
-					<Button variant="outline">
-						<MousePointerSquareDashedIcon />
-						Open portal
+					<Button asChild disabled={!client.portalHref} variant="outline">
+						<Link href={client.portalHref ?? "#"}>
+							<MousePointerSquareDashedIcon />
+							Open portal
+						</Link>
 					</Button>
 					<Button>
 						<SendIcon />

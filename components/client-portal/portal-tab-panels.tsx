@@ -7,20 +7,36 @@ import { HomepagePreview } from "./homepage-preview";
 import { ActivityList, FileList, MessageList, TaskList } from "./portal-lists";
 import { SummarySection } from "./summary-section";
 
-export function OverviewTab({ data }: { data: PortalData }) {
+type PortalPanelAction = "message" | "request" | "request-changes" | "upload-file";
+
+type PortalPanelProps = {
+	data: PortalData;
+	onApprove?: () => void;
+	onCompleteTask?: (taskId: string) => void;
+	onDownloadFile?: (fileName: string) => void;
+	onOpenAction?: (action: PortalPanelAction) => void;
+};
+
+export function OverviewTab({
+	data,
+	onApprove,
+	onCompleteTask,
+	onDownloadFile,
+	onOpenAction,
+}: PortalPanelProps) {
 	return (
 		<div className="space-y-10">
-			<ReviewTab compact data={data} />
+			<ReviewTab compact data={data} onApprove={onApprove} onOpenAction={onOpenAction} />
 			<div className="grid gap-10 xl:grid-cols-2">
 				<SummarySection title="Open Tasks" eyebrow="Client tasks">
-					<TaskList data={data} limit={2} />
+					<TaskList data={data} limit={2} onCompleteTask={onCompleteTask} />
 				</SummarySection>
 				<SummarySection title="Recent discussion" eyebrow="Messages">
 					<MessageList data={data} limit={2} />
 				</SummarySection>
 			</div>
 			<SummarySection title="Latest Files" eyebrow="Files & deliverables">
-				<FileList data={data} limit={2} />
+				<FileList data={data} limit={2} onDownloadFile={onDownloadFile} />
 			</SummarySection>
 		</div>
 	);
@@ -29,9 +45,13 @@ export function OverviewTab({ data }: { data: PortalData }) {
 export function ReviewTab({
 	compact = false,
 	data,
+	onApprove,
+	onOpenAction,
 }: {
 	compact?: boolean;
 	data: PortalData;
+	onApprove?: () => void;
+	onOpenAction?: (action: PortalPanelAction) => void;
 }) {
 	return (
 		<section className="bg-muted/35 px-5 py-7 sm:px-7 sm:py-8">
@@ -79,8 +99,14 @@ export function ReviewTab({
 				</div>
 
 				<div className="space-y-2.5">
-					<Button className="min-h-11 w-full">Approve homepage</Button>
-					<Button className="min-h-11 w-full" variant="outline">
+					<Button className="min-h-11 w-full" onClick={onApprove}>
+						Approve homepage
+					</Button>
+					<Button
+						className="min-h-11 w-full"
+						onClick={() => onOpenAction?.("request-changes")}
+						variant="outline"
+					>
 						Request changes
 					</Button>
 				</div>
@@ -89,11 +115,11 @@ export function ReviewTab({
 	);
 }
 
-export function TasksTab({ data }: { data: PortalData }) {
+export function TasksTab({ data, onCompleteTask, onOpenAction }: PortalPanelProps) {
 	return (
 		<SummarySection
 			action={
-				<Button variant="outline">
+				<Button onClick={() => onOpenAction?.("request")} variant="outline">
 					<PlusIcon className="size-4" />
 					Request something
 				</Button>
@@ -101,7 +127,7 @@ export function TasksTab({ data }: { data: PortalData }) {
 			eyebrow="Client tasks"
 			title="Open Tasks"
 		>
-			<TaskList data={data} />
+			<TaskList data={data} onCompleteTask={onCompleteTask} />
 		</SummarySection>
 	);
 }
@@ -114,10 +140,10 @@ export function MessagesTab({ data }: { data: PortalData }) {
 	);
 }
 
-export function FilesTab({ data }: { data: PortalData }) {
+export function FilesTab({ data, onDownloadFile }: PortalPanelProps) {
 	return (
 		<SummarySection eyebrow="Files & deliverables" title="Latest Files">
-			<FileList data={data} />
+			<FileList data={data} onDownloadFile={onDownloadFile} />
 		</SummarySection>
 	);
 }

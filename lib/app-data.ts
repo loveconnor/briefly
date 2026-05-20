@@ -88,6 +88,7 @@ export type ProjectTaskStatus = "Ready" | "In progress" | "Waiting" | "Blocked"
 export type Project = {
   slug: string
   name: string
+  portalHref?: string
   client: string
   clientAvatar?: string | null
   owner: string
@@ -203,6 +204,7 @@ export type ClientHealth = "Healthy" | "Needs attention" | "At risk" | "Blocked"
 export type ClientRecord = {
   slug: string
   name: string
+  portalHref?: string
   initials: string
   avatarUrl?: string | null
   status: ClientStatus
@@ -278,12 +280,13 @@ export type Portal = {
 
 export type PortalData = {
   portal: Portal | null
+  id: string
   projectName: string
   phase: string
   updated: string
   stateItems: Array<{ label: string; value: string }>
   changes: string[]
-  tasks: Array<{ title: string; meta: string; state: "done" | "open" }>
+  tasks: Array<{ id: string; title: string; meta: string; state: "done" | "open" }>
   messages: Array<{
     action: string
     attachment?: string
@@ -293,6 +296,7 @@ export type PortalData = {
   }>
   files: Array<{
     icon: "document" | "image" | "upload"
+    id: string
     meta: string
     name: string
   }>
@@ -1799,6 +1803,7 @@ export async function getClients(user: SessionUser): Promise<ClientRecord[]> {
       slug: row.slug,
       name: row.name,
       initials: initials(row.name),
+      portalHref: clientProjects.find((project) => project.portalHref)?.portalHref,
       avatarUrl: row.avatar_data_url,
       status: deriveClientStatus(row.status, clientProjects),
       health,
@@ -1948,28 +1953,60 @@ export async function getPortalData(id: string): Promise<PortalData | null> {
   const files = row.project_id ? await getProjectFileRows(row.user_id, row.project_id) : []
   const activity = row.project_id ? await getActivityRows(row.user_id, 20, row.project_id) : []
   const deliverables = row.project_id ? await getDeliverableRows(row.user_id, row.project_id) : []
+  const approvals = row.project_id ? await getApprovalRows(row.user_id, row.project_id) : []
+  const members = row.project_id ? await getProjectMemberRows(row.user_id, row.project_id) : []
+  const messages = row.project_id ? await getPortalMessageRows(row.user_id, row.project_id) : []
   const projectName = row.project_name ?? row.name
   const nextMilestone = deliverables[0]?.title ?? "No milestone scheduled"
+  const openTasks = tasks.filter((task) => !task.completed && !isDoneTaskStatus(task.status))
+  const waitingOn = openTasks[0]?.title ?? approvals.find((approval) => approval.status !== "Approved")?.title ?? "Nothing pending"
+  const reviewChanges = approvals
+    .filter((approval) => approval.status !== "Approved")
+    .map((approval) => approval.detail ?? approval.latest_comment ?? `${approval.title} is waiting for review.`)
 
   return {
-    portal: null,
+    portal: {
+      id: row.id,
+      name: row.name,
+      project: projectName,
+      status: row.status,
+      statusDetail: reviewChanges[0] ?? "Portal is current",
+      visibility: "Client-facing",
+      updated: relativeTime(row.updated_at),
+      engagement: messages[0]?.action ?? "No client messages yet",
+      metrics: [`${openTasks.length} open tasks`, `${approvals.filter((approval) => approval.status !== "Approved").length} approvals pending`],
+      action: waitingOn,
+      activityTitle: activity[0]?.title ?? "No activity yet",
+      activity: activity.slice(0, 3).map((item) => item.title),
+      latestAction: activity[0]?.title ?? "No client action yet",
+      approvalState: approvals.find((approval) => approval.status !== "Approved")?.status ?? "No approvals requested",
+      tone: approvals.some((approval) => approval.status === "Changes requested") ? "blocked" : openTasks.length ? "attention" : "healthy",
+      clientHref: `/portal/${row.id}`,
+      preview: {
+        type: "homepage",
+        label: "Portal",
+      },
+    },
+    id: row.id,
     projectName,
     phase: row.phase ?? "Strategy",
     updated: relativeTime(row.updated_at),
     stateItems: [
-      { label: "Waiting on", value: tasks[0]?.title ?? "No client tasks" },
+      { label: "Waiting on", value: waitingOn },
       { label: "Next milestone", value: nextMilestone },
-      { label: "Open tasks", value: `${tasks.length} client items` },
+      { label: "Open tasks", value: `${openTasks.length} client items` },
     ],
-    changes: [],
+    changes: reviewChanges,
     tasks: tasks.map((task) => ({
+      id: task.id,
       title: task.title,
-      meta: task.due_label ?? "No due date",
-      state: task.status === "Blocked" || task.status === "Waiting" ? "open" : "done",
+      meta: `${task.status} / ${task.due_label ?? "No due date"}`,
+      state: task.completed || isDoneTaskStatus(task.status) ? "done" : "open",
     })),
-    messages: [],
+    messages,
     files: files.map((file) => ({
       icon: fileIcon(file.format),
+      id: file.id,
       meta: `${file.status} / ${relativeTime(file.updated_at)}`,
       name: file.name,
     })),
@@ -1978,7 +2015,7 @@ export async function getPortalData(id: string): Promise<PortalData | null> {
       icon: portalActivityIcon(item.type),
       title: item.title,
     })),
-    team: [{ name: "Workspace owner", role: "Project owner" }],
+    team: members.length ? members.map((member) => ({ name: member.name, role: member.role })) : [{ name: "Workspace owner", role: "Project owner" }],
   }
 }
 
@@ -2519,13 +2556,14 @@ export async function getTemplateBySlug(userId: string, slug: string) {
 }
 
 async function buildProject(user: SessionUser, row: ProjectRow): Promise<Project> {
-  const [tasks, deliverables, approvals, files, activity, members] = await Promise.all([
+  const [tasks, deliverables, approvals, files, activity, members, portalHref] = await Promise.all([
     getTaskRows(user.id, row.id),
     getDeliverableRows(user.id, row.id),
     getApprovalRows(user.id, row.id),
     getProjectFileRows(user.id, row.id),
     getActivityRows(user.id, 100, row.id),
     getProjectMemberRows(user.id, row.id),
+    getProjectPortalHref(user.id, row.id),
   ])
   const phase = row.phase ?? "Strategy"
   const deliverablesComplete = deliverables.filter((item) => item.status === "Delivered").length
@@ -2543,6 +2581,7 @@ async function buildProject(user: SessionUser, row: ProjectRow): Promise<Project
   return {
     slug: row.slug,
     name: row.name,
+    portalHref,
     client: row.client_name ?? "No client assigned",
     clientAvatar: row.client_avatar_data_url,
     owner: user.name ?? user.email,
@@ -2632,14 +2671,16 @@ async function getTaskRows(userId: string, projectId: string) {
   const result = await db.query<{
     assignee: string | null
     blocker: string | null
+    completed: boolean
     detail: string | null
     due_label: string | null
+    id: string
     status: string
     title: string
     updated_at: Date
   }>(
     `
-      select title, assignee, due_label, status, detail, blocker, updated_at
+      select id, title, assignee, due_label, status, detail, blocker, completed, updated_at
       from app_project_tasks
       where user_id = $1 and project_id = $2
       order by sort_order, created_at
@@ -2647,6 +2688,21 @@ async function getTaskRows(userId: string, projectId: string) {
     [userId, projectId],
   )
   return result.rows
+}
+
+async function getProjectPortalHref(userId: string, projectId: string) {
+  const result = await db.query<{ id: string }>(
+    `
+      select id
+      from app_portals
+      where user_id = $1 and project_id = $2
+      order by updated_at desc
+      limit 1
+    `,
+    [userId, projectId],
+  )
+  const portalId = result.rows[0]?.id
+  return portalId ? `/portal/${portalId}` : undefined
 }
 
 async function getDeliverableRows(userId: string, projectId: string) {
@@ -2797,6 +2853,71 @@ async function getActivityRows(userId: string, limit: number, projectId?: string
   return result.rows
 }
 
+async function getPortalMessageRows(userId: string, projectId: string): Promise<PortalData["messages"]> {
+  const updates = await db.query<{
+    attachments: unknown
+    body: string | null
+    sent_at: Date
+    title: string
+  }>(
+    `
+      select title, body, attachments, sent_at
+      from app_client_updates
+      where user_id = $1 and project_id = $2
+      order by sent_at desc
+      limit 10
+    `,
+    [userId, projectId],
+  )
+
+  const comments = await db.query<{
+    actor: string | null
+    detail: string | null
+    occurred_at: Date
+    title: string
+  }>(
+    `
+      select actor, title, detail, occurred_at
+      from app_activity
+      where user_id = $1 and project_id = $2 and type = 'comment'
+      order by occurred_at desc
+      limit 10
+    `,
+    [userId, projectId],
+  )
+
+  return [
+    ...updates.rows.map((update) => {
+      const attachments = jsonArray<string>(update.attachments)
+      return {
+        action: "sent an update",
+        attachment: attachments[0],
+        author: "Workspace team",
+        body: update.body ?? update.title,
+        time: relativeTime(update.sent_at),
+        sortDate: update.sent_at,
+      }
+    }),
+    ...comments.rows.map((comment) => ({
+      action: "commented",
+      attachment: undefined,
+      author: comment.actor ?? "Client",
+      body: comment.detail ?? comment.title,
+      time: relativeTime(comment.occurred_at),
+      sortDate: comment.occurred_at,
+    })),
+  ]
+    .sort((left, right) => right.sortDate.getTime() - left.sortDate.getTime())
+    .slice(0, 10)
+    .map((message) => ({
+      action: message.action,
+      attachment: message.attachment,
+      author: message.author,
+      body: message.body,
+      time: message.time,
+    }))
+}
+
 async function getRequestRows(userId: string, clientId?: string) {
   const result = await db.query<{
     assigned_to: string | null
@@ -2839,6 +2960,10 @@ function activityIcon(typeValue: string): OverviewActivity["icon"] {
 function countLabel(count: number, singular: string, plural: string) {
   if (count <= 0) return null
   return `${count} ${count === 1 ? singular : plural}`
+}
+
+function isDoneTaskStatus(status: string) {
+  return ["Approved", "Complete", "Completed", "Delivered", "Done"].includes(status)
 }
 
 function analyticsIcon(typeValue: string): AnalyticsData["activityFeed"][number]["icon"] {
